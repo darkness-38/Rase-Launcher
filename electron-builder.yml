@@ -11,7 +11,7 @@ win:
     - nsis             # Modern NSIS Installer executable
     - portable         # Single-file portable executable
 nsis:
-  oneClick: true
+  oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
