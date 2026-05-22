@@ -31,6 +31,7 @@ declare global {
       javaPath: string;
       gameDir: string;
       lastUsername: string;
+      savedUsernames?: string[];
       latestFabricLoader?: string;
     }>;
     saveSettings: (settings: {
@@ -38,6 +39,7 @@ declare global {
       javaPath: string;
       gameDir: string;
       lastUsername: string;
+      savedUsernames?: string[];
     }) => Promise<any>;
     getStats: () => Promise<{
       totalPlayTimeMs: number;

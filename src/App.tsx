@@ -11,6 +11,9 @@ export default function App() {
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState<'play' | 'mods' | 'settings'>('play');
+  const [savedUsernames, setSavedUsernames] = useState<string[]>([]);
+  const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+  const [newAccountInput, setNewAccountInput] = useState('');
 
   // Minecraft Launching & Downloading States
   const [selectedVersion, setSelectedVersion] = useState('1.20.4');
@@ -50,6 +53,12 @@ export default function App() {
       const settings = await window.electronAPI.getSettings();
       if (settings.lastUsername) {
         setUsername(settings.lastUsername);
+        setIsLoggedIn(true); // Automatically log in if there's a saved session
+      }
+      if (settings.savedUsernames) {
+        setSavedUsernames(settings.savedUsernames);
+      } else if (settings.lastUsername) {
+        setSavedUsernames([settings.lastUsername]);
       }
       // RAM is read directly from settings at launch time — no need to track in state
       
@@ -322,23 +331,129 @@ export default function App() {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim()) {
+    const cleanUsername = username.trim();
+    if (cleanUsername) {
       if (window.electronAPI) {
-        // Save last username to config
+        // Save last username to config and add to list
         window.electronAPI.getSettings().then((current) => {
+          const updatedUsernames = Array.from(new Set([...(current.savedUsernames || []), cleanUsername]));
           window.electronAPI.saveSettings({
             ...current,
-            lastUsername: username.trim()
+            lastUsername: cleanUsername,
+            savedUsernames: updatedUsernames
           });
+          setSavedUsernames(updatedUsernames);
         });
+      } else {
+        setSavedUsernames((prev) => Array.from(new Set([...prev, cleanUsername])));
       }
       setIsLoggedIn(true);
     }
   };
 
-  const handleSignOut = () => {
+  const handleSwitchAccount = async (targetUsername: string) => {
+    if (window.electronAPI) {
+      const current = await window.electronAPI.getSettings();
+      const updated = {
+        ...current,
+        lastUsername: targetUsername
+      };
+      await window.electronAPI.saveSettings(updated);
+    }
+    setUsername(targetUsername);
+    setIsLoggedIn(true);
+    setShowAccountSwitcher(false);
+  };
+
+  const handleDeleteAccount = async (targetUsername: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Avoid triggering switch
+    const newSaved = savedUsernames.filter((u) => u !== targetUsername);
+    setSavedUsernames(newSaved);
+
+    if (window.electronAPI) {
+      const current = await window.electronAPI.getSettings();
+      const nextUsername = username === targetUsername
+        ? (newSaved.length > 0 ? newSaved[0] : '')
+        : current.lastUsername;
+
+      const updated = {
+        ...current,
+        lastUsername: nextUsername,
+        savedUsernames: newSaved
+      };
+      await window.electronAPI.saveSettings(updated);
+
+      if (username === targetUsername) {
+        if (nextUsername) {
+          setUsername(nextUsername);
+        } else {
+          setUsername('');
+          setIsLoggedIn(false);
+          setShowAccountSwitcher(false);
+        }
+      }
+    } else {
+      if (username === targetUsername) {
+        if (newSaved.length > 0) {
+          setUsername(newSaved[0]);
+        } else {
+          setUsername('');
+          setIsLoggedIn(false);
+          setShowAccountSwitcher(false);
+        }
+      }
+    }
+  };
+
+  const handleAddNewAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanName = newAccountInput.trim();
+    if (!cleanName) return;
+
+    if (!/^[a-zA-Z0-9_]+$/.test(cleanName)) {
+      alert('Sadece harf, rakam ve alt çizgi kullanabilirsiniz.');
+      return;
+    }
+
+    if (cleanName.length > 16) {
+      alert('Kullanıcı adı en fazla 16 karakter olabilir.');
+      return;
+    }
+
+    const updatedUsernames = Array.from(new Set([...savedUsernames, cleanName]));
+    setSavedUsernames(updatedUsernames);
+    setNewAccountInput('');
+
+    if (window.electronAPI) {
+      const current = await window.electronAPI.getSettings();
+      const updated = {
+        ...current,
+        lastUsername: cleanName,
+        savedUsernames: updatedUsernames
+      };
+      await window.electronAPI.saveSettings(updated);
+    }
+
+    setUsername(cleanName);
+    setIsLoggedIn(true);
+    setShowAccountSwitcher(false);
+  };
+
+  const handleGlobalLogout = async () => {
+    setSavedUsernames([]);
+    setUsername('');
     setIsLoggedIn(false);
-    setActiveTab('play');
+    setShowAccountSwitcher(false);
+
+    if (window.electronAPI) {
+      const current = await window.electronAPI.getSettings();
+      const updated = {
+        ...current,
+        lastUsername: '',
+        savedUsernames: []
+      };
+      await window.electronAPI.saveSettings(updated);
+    }
   };
 
   // Localized Date Helper
@@ -502,7 +617,7 @@ export default function App() {
                     </button>
 
                     <button
-                      onClick={handleSignOut}
+                      onClick={() => setShowAccountSwitcher(true)}
                       className="nav-item"
                     >
                       <span className="nav-pip"></span>
@@ -826,6 +941,293 @@ export default function App() {
           )}
 
         </AnimatePresence>
+
+        {/* ACCOUNT SWITCHER MODAL */}
+        <AnimatePresence>
+          {showAccountSwitcher && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 100,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                backdropFilter: 'blur(4px)'
+              }}
+              className="titlebar-no-drag"
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 10 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 10 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                style={{
+                  width: '420px',
+                  backgroundColor: '#1c1917',
+                  border: '1px solid #e8553a',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '18px',
+                  position: 'relative'
+                }}
+              >
+                {/* Terracotta Top Ribbon */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: '#e8553a', borderTopLeftRadius: '11px', borderTopRightRadius: '11px' }} />
+
+                {/* Modal Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ width: '32px', height: '32px', backgroundColor: 'rgba(232, 85, 58, 0.1)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="ti ti-users text-[#e8553a]" style={{ fontSize: '18px' }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#f5f0e8', margin: 0, lineHeight: 1.2 }}>Hesap Değiştir</h3>
+                      <p style={{ fontSize: '11px', color: '#8b857f', margin: 0 }}>Minecraft Çevrimdışı Oturumları</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowAccountSwitcher(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#8b857f',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#f5f0e8';
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#8b857f';
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <i className="ti ti-x" style={{ fontSize: '18px' }} />
+                  </button>
+                </div>
+
+                {/* Saved Accounts list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#6b6560', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: "'Space Mono', monospace" }}>
+                    Kayıtlı Hesaplar
+                  </div>
+                  
+                  <div 
+                    style={{ 
+                      maxHeight: '180px', 
+                      overflowY: 'auto', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '6px',
+                      paddingRight: '4px'
+                    }}
+                    className="custom-scroll"
+                  >
+                    {savedUsernames.length === 0 ? (
+                      <div style={{ padding: '16px', textAlign: 'center', color: '#6b6560', fontSize: '12px', border: '1px dashed #3d3733', borderRadius: '8px' }}>
+                        Kayıtlı hesap bulunamadı.
+                      </div>
+                    ) : (
+                      savedUsernames.map((acc) => {
+                        const isActive = acc === username;
+                        return (
+                          <div
+                            key={acc}
+                            onClick={() => handleSwitchAccount(acc)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 12px',
+                              backgroundColor: isActive ? 'rgba(232, 85, 58, 0.1)' : '#262220',
+                              border: isActive ? '1px solid #e8553a' : '1px solid #3d3733',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive) {
+                                e.currentTarget.style.backgroundColor = '#2d2825';
+                                e.currentTarget.style.borderColor = '#4a433f';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) {
+                                e.currentTarget.style.backgroundColor = '#262220';
+                                e.currentTarget.style.borderColor = '#3d3733';
+                              }
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img
+                                src={`https://crafatar.com/avatars/${acc}?size=24&overlay`}
+                                alt={acc}
+                                style={{ width: '24px', height: '24px', borderRadius: '4px', border: '1px solid #4a433f' }}
+                                onError={(ev) => {
+                                  (ev.target as HTMLImageElement).src = `https://minotar.net/avatar/${acc}/24`;
+                                }}
+                              />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '13px', fontWeight: '600', color: '#f5f0e8' }}>{acc}</span>
+                                {isActive && (
+                                  <span style={{ fontSize: '10px', color: '#5aa85c', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#5aa85c', display: 'inline-block' }}></span>
+                                    aktif profil
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <button
+                              onClick={(e) => handleDeleteAccount(acc, e)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#6b6560',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.color = '#e8553a';
+                                e.currentTarget.style.backgroundColor = 'rgba(232, 85, 58, 0.1)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.color = '#6b6560';
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                              title="Hesabı Sil"
+                            >
+                              <i className="ti ti-trash" style={{ fontSize: '14px' }} />
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Add new account form */}
+                <form onSubmit={handleAddNewAccount} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#6b6560', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: "'Space Mono', monospace" }}>
+                    Yeni Hesap Ekle
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{
+                      flex: 1,
+                      backgroundColor: '#262220',
+                      border: '1px solid #3d3733',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0 10px',
+                      height: '38px',
+                      transition: 'border-color 0.2s'
+                    }}>
+                      <i className="ti ti-user" style={{ fontSize: '13px', color: '#8b857f', marginRight: '8px' }} />
+                      <input
+                        type="text"
+                        value={newAccountInput}
+                        onChange={(e) => setNewAccountInput(e.target.value)}
+                        placeholder="Kullanıcı adı"
+                        maxLength={16}
+                        pattern="^[a-zA-Z0-9_]+$"
+                        title="Sadece harf, rakam ve alt çizgi kullanabilirsiniz."
+                        style={{
+                          flex: 1,
+                          background: 'none',
+                          border: 'none',
+                          outline: 'none',
+                          color: '#f5f0e8',
+                          fontSize: '12px'
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      style={{
+                        backgroundColor: '#e8553a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        width: '38px',
+                        height: '38px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d44530'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e8553a'}
+                      title="Giriş yap & Listeye ekle"
+                    >
+                      <i className="ti ti-plus" style={{ fontSize: '16px' }} />
+                    </button>
+                  </div>
+                </form>
+
+                {/* Footer buttons */}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px', borderTop: '1px solid #262220', paddingTop: '14px' }}>
+                  <button
+                    type="button"
+                    onClick={handleGlobalLogout}
+                    style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(232, 85, 58, 0.05)',
+                      border: '1px solid rgba(232, 85, 58, 0.2)',
+                      borderRadius: '8px',
+                      color: '#e8553a',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      height: '34px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(232, 85, 58, 0.1)';
+                      e.currentTarget.style.borderColor = '#e8553a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(232, 85, 58, 0.05)';
+                      e.currentTarget.style.borderColor = 'rgba(232, 85, 58, 0.2)';
+                    }}
+                  >
+                    <i className="ti ti-logout" style={{ fontSize: '13px' }} />
+                    <span>Tüm Oturumları Kapat</span>
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );

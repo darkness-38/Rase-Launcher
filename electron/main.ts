@@ -27,6 +27,7 @@ interface Settings {
   javaPath: string;
   gameDir: string;
   lastUsername: string;
+  savedUsernames?: string[];   // Multiple saved offline accounts
   latestFabricLoader?: string;
   totalPlayTimeMs?: number;    // Accumulated play time in ms
   lastPlayedVersion?: string;  // e.g. "1.21.1 (Fabric)"
@@ -38,12 +39,23 @@ let settings: Settings = {
   javaPath: 'java',
   gameDir: defaultGameDir,
   lastUsername: '',
+  savedUsernames: [],
   totalPlayTimeMs: 0
 };
 
 if (fs.existsSync(settingsPath)) {
   try {
     settings = { ...settings, ...JSON.parse(fs.readFileSync(settingsPath, 'utf8')) };
+    
+    // Normalize savedUsernames
+    if (!settings.savedUsernames) {
+      settings.savedUsernames = settings.lastUsername ? [settings.lastUsername] : [];
+    } else {
+      settings.savedUsernames = Array.from(new Set(settings.savedUsernames.filter(Boolean)));
+      if (settings.lastUsername && !settings.savedUsernames.includes(settings.lastUsername)) {
+        settings.savedUsernames.unshift(settings.lastUsername);
+      }
+    }
   } catch (e) {
     console.error('Failed to parse settings.json', e);
   }
@@ -493,8 +505,13 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
   // Get Offline Authentication session object
   const auth = Authenticator.getAuth(username);
 
-  // Save last username
+  // Save last username and add to savedUsernames list
   settings.lastUsername = username;
+  if (!settings.savedUsernames) {
+    settings.savedUsernames = [username];
+  } else if (!settings.savedUsernames.includes(username)) {
+    settings.savedUsernames.push(username);
+  }
   saveSettingsData(settings);
 
   // Determine Custom Version identifier
