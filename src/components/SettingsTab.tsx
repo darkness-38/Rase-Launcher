@@ -1,0 +1,198 @@
+import React, { useState, useEffect } from 'react';
+
+interface SettingsTabProps {
+  onSettingsSaved?: () => void;
+}
+
+export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => {
+  const [ram, setRam] = useState(4);
+  const [gameDir, setGameDir] = useState('');
+  const [javaPath, setJavaPath] = useState('java');
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
+
+  // Load settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!window.electronAPI) {
+        console.warn('System API not available (Browser mode)');
+        setRam(4);
+        setGameDir('/home/hamza/.minecraft-rase');
+        setJavaPath('java');
+        return;
+      }
+      try {
+        const current = await window.electronAPI.getSettings();
+        setRam(current.ram);
+        setGameDir(current.gameDir);
+        setJavaPath(current.javaPath || 'java');
+      } catch (e) {
+        console.error('Failed to load settings', e);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleBrowseDir = async () => {
+    if (!window.electronAPI) {
+      setGameDir('/home/hamza/Documents/MockMinecraftDir');
+      return;
+    }
+    try {
+      const selected = await window.electronAPI.selectDirectory();
+      if (selected) {
+        setGameDir(selected);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      if (!window.electronAPI) {
+        // Mock save
+        setTimeout(() => {
+          setShowSavedToast(true);
+          if (onSettingsSaved) onSettingsSaved();
+          setTimeout(() => setShowSavedToast(false), 2000);
+          setIsSaving(false);
+        }, 800);
+        return;
+      }
+      const current = await window.electronAPI.getSettings();
+      const updated = {
+        ...current,
+        ram,
+        gameDir,
+        javaPath
+      };
+      await window.electronAPI.saveSettings(updated);
+      setShowSavedToast(true);
+      if (onSettingsSaved) onSettingsSaved();
+      setTimeout(() => setShowSavedToast(false), 2000);
+    } catch (e) {
+      console.error('Failed to save settings', e);
+    } finally {
+      if (window.electronAPI) {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  return (
+    <div className="settings-wrap">
+      {/* Toast Notification */}
+      {showSavedToast && (
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-[#bee3bc] bg-[#eef7ed] text-[#3a7d3c] shadow-md animate-in fade-in slide-in-from-top-2 duration-120 font-mono-tech" style={{ fontSize: '12px' }}>
+          <i className="ti ti-circle-check" style={{ fontSize: '16px' }} />
+          <span>Ayarlar başarıyla kaydedildi!</span>
+        </div>
+      )}
+
+      {/* Main Container */}
+      <div className="settings-scroll">
+        
+        {/* RAM Selector Card */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <i className="ti ti-sliders settings-card-icon" style={{ fontSize: '16px' }} />
+            <h3 className="settings-card-title">Sistem Belleği (RAM)</h3>
+          </div>
+
+          <div className="settings-field">
+            <div className="settings-field-row">
+              <span className="settings-field-label">Maksimum RAM Miktarı</span>
+              <span className="settings-field-val">
+                {ram} GB
+              </span>
+            </div>
+            
+            <input
+              type="range"
+              min="2"
+              max="16"
+              step="1"
+              value={ram}
+              onChange={(e) => setRam(parseInt(e.target.value))}
+              className="settings-slider"
+            />
+            
+            <div className="settings-slider-ticks">
+              <span>2 GB</span>
+              <span>4 GB (Standart)</span>
+              <span>8 GB (Önerilen)</span>
+              <span>12 GB</span>
+              <span>16 GB</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Game Directory Card */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <i className="ti ti-folder settings-card-icon" style={{ fontSize: '16px' }} />
+            <h3 className="settings-card-title">Oyun Dizini</h3>
+          </div>
+
+          <div className="settings-field">
+            <span className="settings-field-label">Minecraft Veri Yolu</span>
+            <div className="settings-dir-input-wrap">
+              <input
+                type="text"
+                value={gameDir}
+                onChange={(e) => setGameDir(e.target.value)}
+                className="settings-dir-input"
+                placeholder="Örn: /home/.minecraft"
+              />
+              <button
+                onClick={handleBrowseDir}
+                className="settings-dir-btn"
+              >
+                Gözat
+              </button>
+            </div>
+            <p className="settings-card-desc">
+              Değiştirilmediği sürece varsayılan gizli <code className="text-[#e8553a]">.minecraft-rase</code> dizini kullanılır.
+            </p>
+          </div>
+        </div>
+
+        {/* Java Configuration Card */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <i className="ti ti-server settings-card-icon" style={{ fontSize: '16px' }} />
+            <h3 className="settings-card-title">Java Ayarı</h3>
+          </div>
+
+          <div className="settings-field">
+            <span className="settings-field-label">Java Yol Belirteci (Binary Path)</span>
+            <input
+              type="text"
+              value={javaPath}
+              onChange={(e) => setJavaPath(e.target.value)}
+              className="settings-dir-input"
+              placeholder="Varsayılan: java"
+            />
+            <p className="settings-card-desc">
+              Sisteminizde yüklü olan Java çalıştırıcısını otomatik bulmak için varsayılan olarak <code className="text-[#e8553a]">java</code> yazılı bırakın. Hata alırsanız kendi Java binary yolunu tam olarak girin.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Save Button */}
+      <button
+        onClick={handleSave}
+        disabled={isSaving}
+        className="settings-save-btn"
+      >
+        <i className={`ti ti-device-floppy ${isSaving ? 'animate-spin' : ''}`} style={{ fontSize: '16px' }} />
+        <span>{isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}</span>
+        <i className="ti ti-chevron-right" style={{ fontSize: '14px' }} />
+      </button>
+    </div>
+  );
+};

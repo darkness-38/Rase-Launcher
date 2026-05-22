@@ -1,0 +1,167 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.wrap{display:flex;height:560px;background:#f0ece3;font-family:'Outfit',sans-serif;border-radius:14px;overflow:hidden;border:1px solid #d8d2c6;}
+.side{width:220px;background:#1c1917;display:flex;flex-direction:column;flex-shrink:0;}
+.side-top{padding:22px 18px 18px;}
+.logo-mark{width:32px;height:32px;background:#e8553a;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.logo-mark i{color:#fff;font-size:18px;}
+.logo-name{font-size:16px;font-weight:700;color:#f5f0e8;letter-spacing:-0.01em;}
+.logo-ver{font-size:11px;color:#6b6560;font-family:'Space Mono',monospace;margin-top:1px;}
+.side-nav{flex:1;padding:8px 0;}
+.nav-section{font-size:9px;color:#4a4642;letter-spacing:0.12em;text-transform:uppercase;padding:14px 18px 6px;font-family:'Space Mono',monospace;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;color:#7a7571;cursor:pointer;transition:all 0.12s;}
+.nav-item:hover{color:#d4cfc8;background:#252220;}
+.nav-item.active{color:#f5f0e8;background:#2e2a27;}
+.nav-item.active .nav-pip{background:#e8553a;}
+.nav-pip{width:3px;height:3px;border-radius:50%;background:#3a3632;flex-shrink:0;}
+.nav-item i{font-size:16px;}
+.side-user{padding:14px 18px;border-top:1px solid #2a2624;}
+.user-row{display:flex;align-items:center;gap:10px;}
+.user-skin{width:30px;height:30px;border-radius:5px;background:#2e2a27;overflow:hidden;flex-shrink:0;}
+.user-skin img{width:100%;image-rendering:pixelated;}
+.user-name{font-size:13px;color:#d4cfc8;font-weight:600;}
+.user-status{font-size:10px;color:#4a4642;font-family:'Space Mono',monospace;}
+.user-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#5aa85c;margin-right:4px;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:18px 22px;background:#f0ece3;border-bottom:1px solid #d8d2c6;display:flex;align-items:center;justify-content:space-between;}
+.page-title{font-size:20px;font-weight:700;color:#1c1917;letter-spacing:-0.02em;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.chip{background:#e8e3da;border:1px solid #d0cbbe;border-radius:20px;padding:5px 12px;font-size:11px;color:#5a5550;font-family:'Space Mono',monospace;}
+.content{flex:1;padding:20px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.play-card{background:#1c1917;border-radius:12px;padding:20px;display:flex;align-items:center;gap:16px;}
+.play-icon{width:52px;height:52px;background:#e8553a;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.play-icon i{font-size:26px;color:#fff;}
+.play-info{flex:1;}
+.play-label{font-size:11px;color:#5a5550;font-family:'Space Mono',monospace;letter-spacing:0.08em;margin-bottom:4px;}
+.play-version{font-size:18px;font-weight:700;color:#f5f0e8;letter-spacing:-0.02em;}
+.play-sub{font-size:12px;color:#5a5550;margin-top:2px;}
+.fabric-tag{display:inline-block;background:#3a2f1e;color:#e8a84a;border-radius:4px;padding:2px 8px;font-size:11px;font-family:'Space Mono',monospace;margin-left:8px;}
+.play-btn{background:#e8553a;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:7px;flex-shrink:0;transition:all 0.12s;}
+.play-btn:hover{background:#d44530;}
+.play-btn i{font-size:16px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.info-card{background:#fff;border:1px solid #d8d2c6;border-radius:10px;padding:16px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.card-title{font-size:11px;font-weight:600;color:#8a857e;text-transform:uppercase;letter-spacing:0.08em;}
+.card-link{font-size:11px;color:#e8553a;cursor:pointer;font-family:'Space Mono',monospace;}
+.ver-list{}
+.ver-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #ede8df;}
+.ver-row:last-child{border-bottom:none;}
+.ver-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ver-dot.active{background:#5aa85c;}
+.ver-dot.idle{background:#c8c3bb;}
+.ver-name{font-size:13px;color:#1c1917;font-weight:600;flex:1;}
+.ver-loader{font-size:11px;color:#9a9590;font-family:'Space Mono',monospace;}
+.ver-arrow{font-size:14px;color:#c0bbb4;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-box{background:#f5f0e8;border-radius:8px;padding:12px;}
+.stat-n{font-size:22px;font-weight:700;color:#1c1917;font-family:'Space Mono',monospace;letter-spacing:-0.02em;}
+.stat-l{font-size:11px;color:#8a857e;margin-top:2px;}
+.bottom{padding:12px 22px;background:#f0ece3;border-top:1px solid #d8d2c6;display:flex;align-items:center;justify-content:space-between;}
+.ram-wrap{display:flex;align-items:center;gap:8px;}
+.ram-label{font-size:11px;color:#8a857e;font-family:'Space Mono',monospace;}
+.ram-bar{width:64px;height:4px;background:#d8d2c6;border-radius:2px;overflow:hidden;}
+.ram-fill{height:100%;width:38%;background:#e8553a;}
+.ram-val{font-size:11px;color:#5a5550;font-family:'Space Mono',monospace;}
+.update-chip{background:#fef3ee;border:1px solid #f5c4b0;border-radius:20px;padding:4px 10px;font-size:11px;color:#993c1d;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:5px;}
+</style>
+
+<div class="wrap">
+  <div class="side">
+    <div class="side-top">
+      <div class="logo-mark"><i class="ti ti-diamond" aria-hidden="true"></i></div>
+      <div class="logo-name">Rase Launcher</div>
+      <div class="logo-ver">v2.4.1-stable</div>
+    </div>
+    <div class="side-nav">
+      <div class="nav-section">Menü</div>
+      <div class="nav-item active"><span class="nav-pip"></span><i class="ti ti-home" aria-hidden="true"></i> Ana Sayfa</div>
+      <div class="nav-item"><span class="nav-pip"></span><i class="ti ti-versions" aria-hidden="true"></i> Sürümler</div>
+      <div class="nav-item"><span class="nav-pip"></span><i class="ti ti-box" aria-hidden="true"></i> Paketler</div>
+      <div class="nav-section">Sistem</div>
+      <div class="nav-item"><span class="nav-pip"></span><i class="ti ti-settings" aria-hidden="true"></i> Ayarlar</div>
+      <div class="nav-item"><span class="nav-pip"></span><i class="ti ti-users" aria-hidden="true"></i> Hesap Değiştir</div>
+    </div>
+    <div class="side-user">
+      <div class="user-row">
+        <div class="user-skin">
+          <img src="https://crafatar.com/avatars/853c80ef3c3749fdaa49938b674adae6?size=30&overlay" alt="skin" onerror="this.parentElement.style.background='#3a3632'">
+        </div>
+        <div>
+          <div class="user-name">Steve_Rase</div>
+          <div class="user-status"><span class="user-dot"></span>çevrimiçi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title">Ana Sayfa</div>
+      <div class="topbar-right">
+        <div class="chip">Cuma, 22 May</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="play-card">
+        <div class="play-icon"><i class="ti ti-player-play" aria-hidden="true"></i></div>
+        <div class="play-info">
+          <div class="play-label">Son Seçilen Sürüm</div>
+          <div class="play-version">Minecraft 1.21.1 <span class="fabric-tag">Fabric</span></div>
+          <div class="play-sub" style="color:#6b6560;">Son oynama: bugün 14:32 · 3 saat 12 dk</div>
+        </div>
+        <button class="play-btn"><i class="ti ti-player-play" aria-hidden="true"></i> Oyna</button>
+      </div>
+
+      <div class="row2">
+        <div class="info-card">
+          <div class="card-head">
+            <div class="card-title">Son Sürümler</div>
+            <div class="card-link">tümü →</div>
+          </div>
+          <div class="ver-list">
+            <div class="ver-row"><div class="ver-dot active"></div><div class="ver-name">1.21.1</div><div class="ver-loader">Fabric</div><i class="ti ti-chevron-right ver-arrow" aria-hidden="true"></i></div>
+            <div class="ver-row"><div class="ver-dot idle"></div><div class="ver-name">1.20.4</div><div class="ver-loader">Forge</div><i class="ti ti-chevron-right ver-arrow" aria-hidden="true"></i></div>
+            <div class="ver-row"><div class="ver-dot idle"></div><div class="ver-name">1.18.2</div><div class="ver-loader">Vanilla</div><i class="ti ti-chevron-right ver-arrow" aria-hidden="true"></i></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="card-head">
+            <div class="card-title">İstatistikler</div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-n">247</div>
+              <div class="stat-l">toplam saat</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-n">8</div>
+              <div class="stat-l">sürüm</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-n">23</div>
+              <div class="stat-l">aktif mod</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-n">4</div>
+              <div class="stat-l">paket</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="ram-wrap">
+        <div class="ram-label">RAM</div>
+        <div class="ram-bar"><div class="ram-fill"></div></div>
+        <div class="ram-val">2.1 / 4 GB</div>
+      </div>
+      <div class="update-chip"><i class="ti ti-refresh" style="font-size:12px" aria-hidden="true"></i> Güncelleme mevcut</div>
+    </div>
+  </div>
+</div>
