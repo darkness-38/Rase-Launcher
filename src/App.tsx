@@ -926,13 +926,6 @@ export default function App() {
                       <span className="ram-label">Henüz oynanmadı</span>
                     )}
                   </div>
-                  
-                  <div className="update-chip">
-                    <span className="spin-slow" style={{ display: 'inline-flex', fontSize: '12px' }}>
-                      <i className="ti ti-refresh" />
-                    </span>
-                    <span>Rase Launcher Güncel</span>
-                  </div>
                 </div>
 
               </div>

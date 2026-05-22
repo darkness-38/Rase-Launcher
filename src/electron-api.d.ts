@@ -41,6 +41,7 @@ declare global {
       lastUsername: string;
       savedUsernames?: string[];
     }) => Promise<any>;
+    getSystemRam: () => Promise<number>;
     getStats: () => Promise<{
       totalPlayTimeMs: number;
       lastPlayedVersion: string | null;

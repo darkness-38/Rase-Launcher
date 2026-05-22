@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { spawn } from 'child_process';
 import AdmZip from 'adm-zip';
 // @ts-ignore
@@ -160,6 +161,9 @@ ipcMain.handle('get-settings', () => settings);
 ipcMain.handle('save-settings', (_event, newSettings: Settings) => {
   saveSettingsData(newSettings);
   return settings;
+});
+ipcMain.handle('get-system-ram', () => {
+  return Math.round(os.totalmem() / (1024 * 1024 * 1024));
 });
 
 // Stats IPC — returns aggregated real play data

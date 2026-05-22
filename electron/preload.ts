@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
+  getSystemRam: () => ipcRenderer.invoke('get-system-ram'),
   getStats: () => ipcRenderer.invoke('get-stats'),
 
   // Mod & Resource Pack Management

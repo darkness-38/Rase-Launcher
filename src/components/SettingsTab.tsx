@@ -6,6 +6,7 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => {
   const [ram, setRam] = useState(4);
+  const [systemRam, setSystemRam] = useState(16);
   const [gameDir, setGameDir] = useState('');
   const [javaPath, setJavaPath] = useState('java');
   const [isSaving, setIsSaving] = useState(false);
@@ -14,16 +15,23 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
   // Load settings on mount
   useEffect(() => {
     const fetchSettings = async () => {
+      const clamp = (val: number, minVal: number, maxVal: number) => 
+        Math.min(Math.max(val, minVal), maxVal);
+
       if (!window.electronAPI) {
         console.warn('System API not available (Browser mode)');
-        setRam(4);
+        setSystemRam(16);
+        setRam(clamp(4, 1, 15));
         setGameDir('/home/hamza/.minecraft-rase');
         setJavaPath('java');
         return;
       }
       try {
         const current = await window.electronAPI.getSettings();
-        setRam(current.ram);
+        const sysRam = await window.electronAPI.getSystemRam();
+        setSystemRam(sysRam);
+        const maxSelectableRam = Math.max(1, sysRam - 1);
+        setRam(clamp(current.ram, 1, maxSelectableRam));
         setGameDir(current.gameDir);
         setJavaPath(current.javaPath || 'java');
       } catch (e) {
@@ -111,8 +119,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
             
             <input
               type="range"
-              min="2"
-              max="16"
+              min="1"
+              max={Math.max(1, systemRam - 1)}
               step="1"
               value={ram}
               onChange={(e) => setRam(parseInt(e.target.value))}
@@ -120,11 +128,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
             />
             
             <div className="settings-slider-ticks">
-              <span>2 GB</span>
-              <span>4 GB (Standart)</span>
-              <span>8 GB (Önerilen)</span>
-              <span>12 GB</span>
-              <span>16 GB</span>
+              <span>1 GB</span>
+              {systemRam - 1 > 4 && <span>4 GB</span>}
+              {systemRam - 1 > 8 && <span>8 GB</span>}
+              <span>{Math.max(1, systemRam - 1)} GB (Maks)</span>
             </div>
           </div>
         </div>
