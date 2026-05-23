@@ -1,73 +1,111 @@
-# React + TypeScript + Vite
+<div align="center">
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# 🚀 Rase Launcher
 
-Currently, two official plugins are available:
+**Glassmorphism tasarımlı, modern ve hafif bir Minecraft Launcher**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[![Release](https://img.shields.io/github/v/release/darkness-38/Rase-Launcher?style=for-the-badge&color=7c3aed)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=for-the-badge)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+[![Electron](https://img.shields.io/badge/Electron-42-47848F?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
 
-## React Compiler
+</div>
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ✨ Özellikler
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🎮 Oynatıcı
+- **Vanilla, Fabric ve Forge** desteği tek launcher'da
+- Otomatik Minecraft istemci dosyası indirme ve onarma
+- Çevrimdışı kimlik doğrulama (birden fazla kullanıcı profili)
+- Özelleştirilebilir RAM, Java yolu ve JVM argümanları
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📦 Mod Yöneticisi
+- Sürüm bazlı instance sistemi (her sürüm için ayrı mod klasörü)
+- Drag & drop mod kurulumu
+- Mod etkinleştirme / devre dışı bırakma
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 🎵 Discord Rich Presence
+- Launcher açıkken: `Ana Sayfada Geziniyor`
+- Oyun açıldığında: sürüm adı (ör. `1.20.4 (Fabric)`)
+- Tek oyunculuda: `Tek Oyunculu` + sürüm adı
+- Çok oyunculuda: `Çok Oyunculu (sunucu-ip)` + sürüm adı
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 🎨 Tasarım
+- Glassmorphism UI
+- Koyu tema, smooth animasyonlar (Framer Motion)
+- Snapshot & Historical sürüm filtreleri
+
+---
+
+## 📥 İndirme
+
+[**→ En Son Sürümü İndir**](https://github.com/darkness-38/Rase-Launcher/releases/latest)
+
+| Platform | Dosya | Açıklama |
+|----------|-------|----------|
+| 🐧 Linux | `Rase Launcher-x.x.x.AppImage` | Evrensel Linux binary **(önerilen)** |
+| 🐧 Linux | `rase-launcher-x.x.x.tar.gz` | Sıkıştırılmış arşiv |
+| 🪟 Windows | `Rase Launcher Setup x.x.x.exe` | NSIS kurulum sihirbazı **(önerilen)** |
+| 🪟 Windows | `Rase Launcher x.x.x.exe` | Portable (kurulum gerektirmez) |
+
+### Linux AppImage
+```bash
+chmod +x "Rase Launcher-1.0.0.AppImage"
+./"Rase Launcher-1.0.0.AppImage"
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🛠️ Geliştirme
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Gereksinimler
+- [Node.js](https://nodejs.org/) v18+
+- [npm](https://www.npmjs.com/)
+
+### Kurulum
+```bash
+git clone https://github.com/darkness-38/Rase-Launcher.git
+cd Rase-Launcher
+npm install
 ```
+
+### Geliştirme Modu
+```bash
+npm run dev
+```
+
+### Derleme
+```bash
+# Linux (AppImage + tar.gz)
+npm run dist:linux
+
+# Windows (NSIS + Portable)
+npm run dist:win
+
+# Her ikisi
+npm run dist
+```
+
+Çıktılar `dist-package/` klasörüne gelir.
+
+---
+
+## 🏗️ Teknoloji Yığını
+
+| Katman | Teknoloji |
+|--------|-----------|
+| UI Framework | React 19 + TypeScript |
+| Build Tool | Vite |
+| Desktop | Electron 42 |
+| Animasyon | Framer Motion |
+| Minecraft Core | minecraft-launcher-core |
+| Discord RPC | discord-rpc |
+| Paketleme | electron-builder |
+
+---
+
+## 📄 Lisans
+
+MIT © [darkness-38](https://github.com/darkness-38)
