@@ -2,7 +2,7 @@
 
 # 🚀 Rase Launcher
 
-**Glassmorphism tasarımlı, modern ve hafif bir Minecraft Launcher**
+**Modern ve hafif bir Minecraft Launcher**
 
 [![Release](https://img.shields.io/github/v/release/darkness-38/Rase-Launcher?style=for-the-badge&color=7c3aed)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=for-the-badge)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
@@ -33,7 +33,6 @@
 - Çok oyunculuda: `Çok Oyunculu (sunucu-ip)` + sürüm adı
 
 ### 🎨 Tasarım
-- Glassmorphism UI
 - Koyu tema, smooth animasyonlar (Framer Motion)
 - Snapshot & Historical sürüm filtreleri
 
