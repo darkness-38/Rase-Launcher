@@ -1,10 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
 import { TitleBar } from './components/TitleBar';
 import { VersionDropdown } from './components/VersionDropdown';
 import { ModsTab } from './components/ModsTab';
 import { SettingsTab } from './components/SettingsTab';
+
+// Helper: parse installed version string to version and loader
+const parseInstalledVersion = (ver: string): { version: string; loader: 'vanilla' | 'fabric' | 'forge' } => {
+  if (!ver) return { version: '', loader: 'vanilla' };
+  const lower = ver.toLowerCase();
+  if (lower.includes('fabric')) {
+    const parts = ver.split('-');
+    const version = parts[parts.length - 1] || '';
+    return { version, loader: 'fabric' };
+  }
+  if (lower.includes('forge')) {
+    const parts = ver.split('-');
+    const version = parts[0] || '';
+    return { version, loader: 'forge' };
+  }
+  return { version: ver, loader: 'vanilla' };
+};
 
 export default function App() {
   // Navigation & User State
@@ -18,35 +34,42 @@ export default function App() {
   // Minecraft Launching & Downloading States
   const [selectedVersion, setSelectedVersion] = useState('1.20.4');
   const [selectedLoader, setSelectedLoader] = useState<'vanilla' | 'fabric' | 'forge'>('vanilla');
-  const [availableVersions, setAvailableVersions] = useState<string[]>([]);
+  const [availableVersions, setAvailableVersions] = useState<{ id: string; type: string }[]>([]);
   const [installedVersions, setInstalledVersions] = useState<string[]>([]);
   const [launchState, setLaunchState] = useState<'idle' | 'installing' | 'preparing' | 'launched' | 'error'>('idle');
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorDetails, setErrorDetails] = useState('');
   
-  // Custom Log Drawer States
-  const [logs, setLogs] = useState<string[]>([]);
-  const [showLogs, setShowLogs] = useState(false);
-  const logTerminalRef = useRef<HTMLDivElement>(null);
-
-  // Dynamic Statistics States
-  const [modsCount, setModsCount] = useState(0);
-  const [packsCount, setPacksCount] = useState(0);
-  const [shadersCount, setShadersCount] = useState(0);
-
   // Real play statistics
-  const [totalPlayHours, setTotalPlayHours] = useState(0);
   const [lastPlayedVersion, setLastPlayedVersion] = useState<string | null>(null);
   const [lastPlayedAt, setLastPlayedAt] = useState<number | null>(null);
+  const [appLoading, setAppLoading] = useState(true);
 
+  // Version Visibility States
+  const [showSnapshots, setShowSnapshots] = useState(false);
+  const [showHistorical, setShowHistorical] = useState(false);
+  const [showOnlyInstalled, setShowOnlyInstalled] = useState(false);
+  const [showModded, setShowModded] = useState(true);
 
   // Sync initial settings and version info
   const loadSystemInfo = async () => {
     if (!window.electronAPI) {
       console.warn('System API not available (Browser mode)');
-      setAvailableVersions(['1.21.1', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.8.9', '1.7.10']);
+      setAvailableVersions([
+        { id: '1.21.1', type: 'release' },
+        { id: '1.20.4', type: 'release' },
+        { id: '1.20.1', type: 'release' },
+        { id: '1.19.4', type: 'release' },
+        { id: '1.19.2', type: 'release' },
+        { id: '1.18.2', type: 'release' },
+        { id: '1.16.5', type: 'release' },
+        { id: '1.12.2', type: 'release' },
+        { id: '1.8.9', type: 'release' },
+        { id: '1.7.10', type: 'release' }
+      ]);
       setInstalledVersions(['1.21.1', 'fabric-loader-0.15.11-1.20.4']);
+      setAppLoading(false);
       return;
     }
     try {
@@ -60,12 +83,59 @@ export default function App() {
       } else if (settings.lastUsername) {
         setSavedUsernames([settings.lastUsername]);
       }
-      // RAM is read directly from settings at launch time — no need to track in state
       
-      const available = await window.electronAPI.getAvailableVersions();
+      // Load last selected loader type
+      if (settings.lastLoader) {
+        setSelectedLoader(settings.lastLoader as any);
+      }
+      
+      let available: { id: string; type: string }[] = [];
+      try {
+        const res = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json');
+        const data = await res.json();
+        available = data.versions.map((v: any) => ({
+          id: v.id,
+          type: v.type
+        }));
+      } catch (e) {
+        console.warn('Failed to fetch Mojang versions directly, falling back to Electron API...', e);
+        try {
+          available = await window.electronAPI.getAvailableVersions();
+        } catch (_) {}
+      }
+
+      if (!available || available.length === 0) {
+        available = [
+          { id: '1.21.1', type: 'release' },
+          { id: '1.20.4', type: 'release' },
+          { id: '1.20.1', type: 'release' },
+          { id: '1.19.4', type: 'release' },
+          { id: '1.19.2', type: 'release' },
+          { id: '1.18.2', type: 'release' },
+          { id: '1.16.5', type: 'release' },
+          { id: '1.12.2', type: 'release' },
+          { id: '1.8.9', type: 'release' },
+          { id: '1.7.10', type: 'release' }
+        ];
+      }
+
       setAvailableVersions(available);
-      if (available.length > 0 && !available.includes(selectedVersion)) {
-        setSelectedVersion(available[0]);
+      const availableIds = available.map(v => v.id);
+      if (available.length > 0) {
+        if (settings.lastVersion && availableIds.includes(settings.lastVersion)) {
+          setSelectedVersion(settings.lastVersion);
+        } else if (!availableIds.includes(selectedVersion)) {
+          setSelectedVersion(availableIds[0]);
+        }
+      }
+
+      const modded = settings.showModded ?? true;
+      setShowSnapshots(settings.showSnapshots ?? false);
+      setShowHistorical(settings.showHistorical ?? false);
+      setShowOnlyInstalled(settings.showOnlyInstalled ?? false);
+      setShowModded(modded);
+      if (!modded) {
+        setSelectedLoader('vanilla');
       }
 
       const installed = await window.electronAPI.getInstalledVersions();
@@ -74,36 +144,135 @@ export default function App() {
       // Load real play statistics
       try {
         const stats = await window.electronAPI.getStats();
-        const hours = Math.floor((stats.totalPlayTimeMs || 0) / 3600000);
-        setTotalPlayHours(hours);
         setLastPlayedVersion(stats.lastPlayedVersion);
         setLastPlayedAt(stats.lastPlayedAt);
       } catch (_) {}
     } catch (e) {
       console.error('System API connection failed.', e);
+    } finally {
+      // Smooth simulated delay to make startup transitions feel super premium
+      setTimeout(() => {
+        setAppLoading(false);
+      }, 600);
     }
   };
 
-  // Fetch dynamic counts for statistics card
-  const fetchStatsCounts = async () => {
+  // Save active version selection to settings
+  const saveActiveVersion = async (v: string, l: string) => {
     if (!window.electronAPI) return;
     try {
-      const data = await window.electronAPI.getModsAndPacks(selectedVersion, selectedLoader);
-      setModsCount((data.mods || []).length);
-      setPacksCount((data.packs || []).length);
-      setShadersCount((data.shaders || []).length);
+      const current = await window.electronAPI.getSettings();
+      await window.electronAPI.saveSettings({
+        ...current,
+        lastVersion: v,
+        lastLoader: l
+      });
     } catch (e) {
-      console.error('Failed to read stats counts', e);
+      console.error('Failed to save active version settings', e);
     }
   };
+
+  const handleSetSelectedVersion = (v: string) => {
+    setSelectedVersion(v);
+    saveActiveVersion(v, selectedLoader);
+  };
+
+  const handleSetSelectedLoader = (l: 'vanilla' | 'fabric' | 'forge') => {
+    setSelectedLoader(l);
+    saveActiveVersion(selectedVersion, l);
+  };
+
+  // Filter available versions based on visibility settings
+  const filteredVersionsList = React.useMemo(() => {
+    // Safely normalize availableVersions to `{ id: string; type: string }`
+    const normalizedList = (availableVersions || []).map((v) => {
+      if (typeof v === 'string') {
+        return { id: v, type: 'release' };
+      }
+      if (v && typeof v === 'object' && 'id' in v) {
+        return { id: v.id, type: (v as any).type || 'release' };
+      }
+      return { id: String(v), type: 'release' };
+    });
+
+    let snapshotCount = 0;
+    const maxSnapshots = 20; // Limit to 20 latest snapshots for high performance and clean UI
+
+    // Filter by type and limit counts dynamically
+    let filtered = normalizedList.filter((v) => {
+      if (v.type === 'release') return true;
+      
+      if (v.type === 'snapshot') {
+        if (!showSnapshots) return false;
+        snapshotCount++;
+        return snapshotCount <= maxSnapshots;
+      }
+      
+      if (v.type === 'old_beta' || v.type === 'old_alpha') {
+        return showHistorical; // Show ALL historical versions without arbitrary capping
+      }
+      
+      return false;
+    });
+
+    // Map to string IDs
+    let versionIds = filtered.map((v) => v.id);
+
+    // Filter to only show 1.7+ versions for releases (historical & snapshots already limited by count)
+    versionIds = versionIds.filter((v) => {
+      const item = normalizedList.find(x => x.id === v);
+      if (item && item.type === 'snapshot') return true;
+      if (item && (item.type === 'old_beta' || item.type === 'old_alpha')) return true;
+
+      // If it starts with "1."
+      const parts = v.split('.');
+      if (parts[0] === '1') {
+        const major = parseInt(parts[1], 10);
+        return major >= 7; // Only 1.7+ versions
+      }
+
+      // If it starts with a modern major release version like "26.1.2"
+      const partsModern = v.split('.');
+      if (partsModern.length > 0) {
+        const majorModern = parseInt(partsModern[0], 10);
+        if (majorModern >= 20) return true; // e.g. 26.1.2
+      }
+
+      return false;
+    });
+
+    // Filter only installed versions
+    if (showOnlyInstalled) {
+      const list = installedVersions || [];
+      versionIds = versionIds.filter((id) => {
+        return list.some((v) => {
+          const parsed = parseInstalledVersion(v);
+          return parsed.version === id;
+        });
+      });
+    }
+
+    // Defensive fallback: if the list becomes empty, fallback to standard releases
+    if (versionIds.length === 0) {
+      return normalizedList
+        .filter(v => v.type === 'release')
+        .map(v => v.id)
+        .filter(v => {
+          const parts = v.split('.');
+          if (parts[0] === '1') {
+            const major = parseInt(parts[1], 10);
+            return major >= 7;
+          }
+          return false;
+        });
+    }
+
+    return versionIds;
+  }, [availableVersions, installedVersions, showSnapshots, showHistorical, showOnlyInstalled]);
 
   useEffect(() => {
     loadSystemInfo();
   }, []);
-
-  useEffect(() => {
-    fetchStatsCounts();
-  }, [selectedVersion, selectedLoader, activeTab]);
 
   // Listen to IPC event streams from Electron
   useEffect(() => {
@@ -132,12 +301,7 @@ export default function App() {
         setProgress(100);
         setStatusMessage('Oyun başarıyla başlatıldı!');
         
-        // Explode beautiful reward confetti!
-        confetti({
-          particleCount: 150,
-          spread: 80,
-          origin: { y: 0.6 }
-        });
+        // Confetti effect disabled per user request
 
         // Refresh installed versions
         loadSystemInfo();
@@ -158,7 +322,6 @@ export default function App() {
         // Refresh play stats so hours + last played update
         if (window.electronAPI) {
           window.electronAPI.getStats().then((stats) => {
-            setTotalPlayHours(Math.floor((stats.totalPlayTimeMs || 0) / 3600000));
             setLastPlayedVersion(stats.lastPlayedVersion);
             setLastPlayedAt(stats.lastPlayedAt);
           }).catch(() => {});
@@ -187,25 +350,14 @@ export default function App() {
       }
     });
 
-    // 4. Console Log Listener
-    const unsubLog = window.electronAPI.onLaunchLog((logLine) => {
-      setLogs((prev) => [...prev.slice(-300), logLine]); // Cache last 300 lines
-    });
-
     return () => {
       unsubProgress();
       unsubStatus();
       unsubInstall();
-      unsubLog();
     };
   }, [selectedVersion, selectedLoader]);
 
-  // Auto-scroll terminal log to bottom
-  useEffect(() => {
-    if (logTerminalRef.current) {
-      logTerminalRef.current.scrollTop = logTerminalRef.current.scrollHeight;
-    }
-  }, [logs]);
+
 
   // Check if active selection is installed
   const isSelectedInstalled = () => {
@@ -226,7 +378,6 @@ export default function App() {
     }
 
     if (launchState !== 'idle') return; // Debounce triggers
-    setLogs([]); // Clear previous log buffer
 
     try {
       const isInstalled = isSelectedInstalled();
@@ -254,11 +405,7 @@ export default function App() {
               if (pct >= 100) {
                 clearInterval(interval);
                 setLaunchState('launched');
-                confetti({
-                  particleCount: 150,
-                  spread: 80,
-                  origin: { y: 0.6 }
-                });
+                // Confetti effect disabled per user request
                 setInstalledVersions((prev) => [...prev, selectedVersion]);
                 setTimeout(() => {
                   setLaunchState('idle');
@@ -310,11 +457,7 @@ export default function App() {
           // Mock launch in browser mode
           setTimeout(() => {
             setLaunchState('launched');
-            confetti({
-              particleCount: 150,
-              spread: 80,
-              origin: { y: 0.6 }
-            });
+            // Confetti effect disabled per user request
             setTimeout(() => {
               setLaunchState('idle');
               setProgress(0);
@@ -480,8 +623,7 @@ export default function App() {
     return `${days} gün önce`;
   };
 
-
-
+  // Helper: parse installed version string to version and loader
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', userSelect: 'none', backgroundColor: '#f0ece3' }}>
       
@@ -689,15 +831,12 @@ export default function App() {
                           </div>
                           
                           <div className="play-info">
-                            <div className="play-label">Son Seçilen Sürüm</div>
+                            <div className="play-label">Seçili Sürüm</div>
                             <div className="play-version">
                               Minecraft {selectedVersion}
                               {selectedLoader === 'fabric' && <span className="fabric-tag">Fabric</span>}
                               {selectedLoader === 'forge' && <span className="fabric-tag" style={{ background: '#3d2b1f', color: '#e88d4a' }}>Forge</span>}
                               {selectedLoader === 'vanilla' && <span className="fabric-tag" style={{ background: '#213523', color: '#5aa85c' }}>Vanilla</span>}
-                            </div>
-                            <div className="play-sub" style={{ color: '#6b6560' }}>
-                              Dilediğin modu veya shaderı yükle, doğrudan başlat.
                             </div>
                           </div>
 
@@ -737,13 +876,14 @@ export default function App() {
                           </div>
 
                           <VersionDropdown
-                            selectedVersion={selectedVersion}
-                            setSelectedVersion={setSelectedVersion}
-                            selectedLoader={selectedLoader}
-                            setSelectedLoader={setSelectedLoader}
-                            availableVersions={availableVersions}
-                            installedVersions={installedVersions}
-                          />
+                             selectedVersion={selectedVersion}
+                             setSelectedVersion={handleSetSelectedVersion}
+                             selectedLoader={selectedLoader}
+                             setSelectedLoader={handleSetSelectedLoader}
+                             availableVersions={filteredVersionsList}
+                             installedVersions={installedVersions}
+                             showModded={showModded}
+                           />
                         </div>
 
                         {/* Error Notification Panel */}
@@ -788,95 +928,7 @@ export default function App() {
                           </div>
                         )}
 
-                        {/* Two-Column Grid: Son Sürümler & İstatistikler */}
-                        <div className="row2">
-                          {/* Son Sürümler Card */}
-                          <div className="info-card">
-                            <div className="card-head">
-                              <div className="card-title">Son Sürümler</div>
-                            </div>
-                            <div className="ver-list">
-                              {availableVersions.slice(0, 3).map((ver, idx) => {
-                                const isInstalled = installedVersions.includes(ver) || 
-                                  installedVersions.some(v => v.includes(ver));
-                                return (
-                                  <div key={ver} className="ver-row">
-                                    <div className={`ver-dot ${isInstalled ? 'active' : 'idle'}`}></div>
-                                    <div className="ver-name">{ver}</div>
-                                    <div className="ver-loader">{idx === 0 ? 'Fabric' : idx === 1 ? 'Forge' : 'Vanilla'}</div>
-                                    <i className="ti ti-chevron-right ver-arrow" style={{ fontSize: '14px' }} />
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
 
-                          {/* İstatistikler Card */}
-                          <div className="info-card">
-                            <div className="card-head">
-                              <div className="card-title">İstatistikler</div>
-                            </div>
-                            <div className="stats-grid">
-                              <div className="stat-box">
-                                <div className="stat-n">{totalPlayHours}</div>
-                                <div className="stat-l">toplam saat</div>
-                              </div>
-                              <div className="stat-box">
-                                <div className="stat-n">{installedVersions.length}</div>
-                                <div className="stat-l">kurulu sürüm</div>
-                              </div>
-                              <div className="stat-box">
-                                <div className="stat-n">{modsCount}</div>
-                                <div className="stat-l">aktif mod</div>
-                              </div>
-                              <div className="stat-box">
-                                <div className="stat-n">{packsCount + shadersCount}</div>
-                                <div className="stat-l">paket &amp; shader</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Console Logs drawer */}
-                        {showLogs && (
-                          <div className="logs-drawer">
-                            <div className="logs-drawer-header">
-                              <span className="logs-drawer-title">
-                                <i className="ti ti-terminal" style={{ fontSize: '12px' }} /> Konsol Çıktısı (Canlı)
-                              </span>
-                              <button 
-                                onClick={() => setShowLogs(false)} 
-                                className="logs-drawer-close"
-                              >
-                                Kapat
-                              </button>
-                            </div>
-                            <div 
-                              ref={logTerminalRef}
-                              className="logs-drawer-terminal"
-                              style={{ overflowY: 'auto', maxHeight: '200px' }}
-                            >
-                              {logs.length === 0 ? (
-                                <span className="logs-empty">Log çıktısı bekleniyor... Oyunu başlattığınızda konsol burada görünecektir.</span>
-                              ) : (
-                                logs.map((log, idx) => (
-                                  <div key={idx} className="logs-line">{log}</div>
-                                ))
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Console Toggle Button */}
-                        <div className="logs-toggle-row">
-                          <button
-                            onClick={() => setShowLogs(!showLogs)}
-                            className={`logs-toggle-btn ${showLogs ? 'active' : ''}`}
-                          >
-                            <i className="ti ti-terminal" style={{ fontSize: '14px' }} />
-                            <span>{showLogs ? 'Konsolu Gizle' : 'Konsolu Göster'}</span>
-                          </button>
-                        </div>
                       </motion.div>
                     )}
 
@@ -1217,6 +1269,70 @@ export default function App() {
                   </button>
                 </div>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* STARTUP APP LOADING OVERLAY */}
+        <AnimatePresence>
+          {appLoading && (
+            <motion.div
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 9999, // Force above all UI elements
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#faf8f5', // Warm sand theme matching background
+                color: '#1c1917'
+              }}
+              className="titlebar-no-drag"
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', textAlign: 'center' }}>
+                {/* Premium retro-minimalist animated terracotta logo */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '16px',
+                    backgroundColor: '#e8553a', // Terracotta Orange
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 8px 16px rgba(232, 85, 58, 0.22)'
+                  }}
+                >
+                  <i className="ti ti-brand-minecraft" style={{ fontSize: '32px', color: '#ffffff' }} />
+                </motion.div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1c1917', margin: 0, letterSpacing: '0.5px' }}>
+                    Rase Launcher
+                  </h2>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', minHeight: '20px' }}>
+                    <i className="ti ti-refresh animate-spin" style={{ fontSize: '13px', color: '#e8553a', display: 'inline-block' }} />
+                    <span style={{ fontSize: '11.5px', color: '#8a857e', fontWeight: '600', letterSpacing: '0.2px', fontFamily: 'monospace' }}>
+                      Sistem verileri ve sürümler yükleniyor...
+                    </span>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

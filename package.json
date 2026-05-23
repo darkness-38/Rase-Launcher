@@ -22,6 +22,7 @@
   "dependencies": {
     "adm-zip": "^0.5.17",
     "canvas-confetti": "^1.9.4",
+    "discord-rpc": "^4.0.1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "minecraft-launcher-core": "^3.18.2",

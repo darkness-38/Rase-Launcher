@@ -9,6 +9,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
   const [systemRam, setSystemRam] = useState(16);
   const [gameDir, setGameDir] = useState('');
   const [javaPath, setJavaPath] = useState('java');
+  const [showSnapshots, setShowSnapshots] = useState(false);
+  const [showHistorical, setShowHistorical] = useState(false);
+  const [showOnlyInstalled, setShowOnlyInstalled] = useState(false);
+  const [showModded, setShowModded] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
 
@@ -24,6 +28,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setRam(clamp(4, 1, 15));
         setGameDir('/home/hamza/.minecraft-rase');
         setJavaPath('java');
+        setShowSnapshots(false);
+        setShowHistorical(false);
+        setShowOnlyInstalled(false);
+        setShowModded(true);
         return;
       }
       try {
@@ -34,6 +42,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setRam(clamp(current.ram, 1, maxSelectableRam));
         setGameDir(current.gameDir);
         setJavaPath(current.javaPath || 'java');
+        setShowSnapshots(current.showSnapshots ?? false);
+        setShowHistorical(current.showHistorical ?? false);
+        setShowOnlyInstalled(current.showOnlyInstalled ?? false);
+        setShowModded(current.showModded ?? true);
       } catch (e) {
         console.error('Failed to load settings', e);
       }
@@ -74,7 +86,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         ...current,
         ram,
         gameDir,
-        javaPath
+        javaPath,
+        showSnapshots,
+        showHistorical,
+        showOnlyInstalled,
+        showModded
       };
       await window.electronAPI.saveSettings(updated);
       setShowSavedToast(true);
@@ -185,6 +201,88 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
             <p className="settings-card-desc">
               Sisteminizde yüklü olan Java çalıştırıcısını otomatik bulmak için varsayılan olarak <code className="text-[#e8553a]">java</code> yazılı bırakın. Hata alırsanız kendi Java binary yolunu tam olarak girin.
             </p>
+          </div>
+        </div>
+
+        {/* Version Visibility Card */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <i className="ti ti-eye settings-card-icon" style={{ fontSize: '16px' }} />
+            <h3 className="settings-card-title">Sürüm Görünürlük Ayarları</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={showSnapshots}
+                onChange={(e) => setShowSnapshots(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: 'var(--color-terracotta)',
+                  cursor: 'pointer'
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#1c1917' }}>Snapshot Sürümleri Göster</span>
+                <span style={{ fontSize: '11px', color: '#8a857e' }}>Geliştirme aşamasındaki test (snapshot) sürümlerini listeler.</span>
+              </div>
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={showHistorical}
+                onChange={(e) => setShowHistorical(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: 'var(--color-terracotta)',
+                  cursor: 'pointer'
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#1c1917' }}>Eski &amp; Tarihi Sürümleri Göster</span>
+                <span style={{ fontSize: '11px', color: '#8a857e' }}>Klasik eski Alfa ve Beta (old_alpha/old_beta) sürümlerini dahil eder.</span>
+              </div>
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={showOnlyInstalled}
+                onChange={(e) => setShowOnlyInstalled(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: 'var(--color-terracotta)',
+                  cursor: 'pointer'
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#1c1917' }}>Sadece Yüklü Sürümleri Göster</span>
+                <span style={{ fontSize: '11px', color: '#8a857e' }}>Yalnızca yerel cihazınızda indirilmiş sürümleri listeler.</span>
+              </div>
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={showModded}
+                onChange={(e) => setShowModded(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: 'var(--color-terracotta)',
+                  cursor: 'pointer'
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#1c1917' }}>Modlu (Forge/Fabric) Sürümleri Göster</span>
+                <span style={{ fontSize: '11px', color: '#8a857e' }}>Sürümler listesinde Forge ve Fabric mod motoru seçeneklerini aktif eder.</span>
+              </div>
+            </label>
           </div>
         </div>
 

@@ -21,7 +21,7 @@ declare global {
     ) => Promise<{ success: boolean; versionName: string }>;
 
     // Version queries
-    getAvailableVersions: () => Promise<string[]>;
+    getAvailableVersions: () => Promise<{ id: string; type: string }[]>;
     getInstalledVersions: () => Promise<string[]>;
 
     // Settings IPCs
@@ -33,6 +33,12 @@ declare global {
       lastUsername: string;
       savedUsernames?: string[];
       latestFabricLoader?: string;
+      lastVersion?: string;
+      lastLoader?: string;
+      showSnapshots?: boolean;
+      showHistorical?: boolean;
+      showOnlyInstalled?: boolean;
+      showModded?: boolean;
     }>;
     saveSettings: (settings: {
       ram: number;
@@ -40,6 +46,13 @@ declare global {
       gameDir: string;
       lastUsername: string;
       savedUsernames?: string[];
+      latestFabricLoader?: string;
+      lastVersion?: string;
+      lastLoader?: string;
+      showSnapshots?: boolean;
+      showHistorical?: boolean;
+      showOnlyInstalled?: boolean;
+      showModded?: boolean;
     }) => Promise<any>;
     getSystemRam: () => Promise<number>;
     getStats: () => Promise<{
@@ -53,6 +66,7 @@ declare global {
     deleteModOrPack: (fileName: string, type: 'mods' | 'resourcepacks' | 'shaderpacks', version?: string, loaderType?: string) => Promise<{ success: boolean; error?: string }>;
     openFolder: (type: 'mods' | 'resourcepacks' | 'shaderpacks' | 'root', version?: string, loaderType?: string) => Promise<{ success: boolean }>;
     installModOrPack: (filePath: string, version?: string, loaderType?: string) => Promise<{ success: boolean; fileName: string; type: 'mods' | 'resourcepacks' | 'shaderpacks' }>;
+    selectModsOrPacks: () => Promise<string[]>;
 
     // Launch/Install Event Listeners
     onLaunchProgress: (

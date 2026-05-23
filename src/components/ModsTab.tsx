@@ -75,6 +75,12 @@ export const ModsTab: React.FC<ModsTabProps> = ({
         continue;
       }
 
+      if (window.electronAPI && absolutePath === file.name) {
+        failCount++;
+        lastErrorMessage = "Dosya tam yolu okunamadı. Lütfen bu alana tıklayıp dosya seçici ile yükleyin.";
+        continue;
+      }
+
       try {
         if (!window.electronAPI) {
           // Mock install in browser mode
@@ -107,6 +113,45 @@ export const ModsTab: React.FC<ModsTabProps> = ({
       triggerNotification('success', `${successCount} dosya kuruldu, ${failCount} dosya başarısız.`);
     } else if (failCount > 0) {
       triggerNotification('error', lastErrorMessage || 'Dosyalar kurulamadı.');
+    }
+  };
+
+  // Click to Select Files handler
+  const handleSelectFilesClick = async () => {
+    try {
+      if (!window.electronAPI) {
+        triggerNotification('error', 'Tarayıcı önizleme modunda dosya seçimi yapılamaz.');
+        return;
+      }
+
+      const filePaths = await window.electronAPI.selectModsOrPacks();
+      if (!filePaths || filePaths.length === 0) return; // Cancelled
+
+      let successCount = 0;
+      let failCount = 0;
+      let lastErrorMessage = '';
+
+      for (const filePath of filePaths) {
+        try {
+          await window.electronAPI.installModOrPack(filePath, selectedVersion, selectedLoader);
+          successCount++;
+        } catch (err: any) {
+          failCount++;
+          lastErrorMessage = err.message || 'Dosya kurulurken hata oluştu.';
+        }
+      }
+
+      await fetchFiles();
+
+      if (successCount > 0 && failCount === 0) {
+        triggerNotification('success', `${successCount} dosya başarıyla kuruldu!`);
+      } else if (successCount > 0 && failCount > 0) {
+        triggerNotification('success', `${successCount} dosya kuruldu, ${failCount} dosya başarısız.`);
+      } else if (failCount > 0) {
+        triggerNotification('error', lastErrorMessage || 'Dosyalar kurulamadı.');
+      }
+    } catch (err: any) {
+      triggerNotification('error', 'Dosya seçilirken hata oluştu.');
     }
   };
 
@@ -217,15 +262,17 @@ export const ModsTab: React.FC<ModsTabProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onClick={handleSelectFilesClick}
         className={`drag-zone ${isDragging ? 'active' : ''}`}
+        style={{ cursor: 'pointer', transition: 'all 0.2s ease-in-out' }}
       >
         <i className="ti ti-cloud-upload drag-zone-icon" style={{ fontSize: '32px' }} />
         <div>
           <div className="drag-zone-title">
-            Mod, Doku veya Shader Paketlerini Sürükle ve Bırak
+            Mod, Doku veya Shader Paketlerini Sürükle, Bırak veya Tıkla
           </div>
           <div className="drag-zone-sub">
-            Modlar için <code className="text-[#e8553a]">.jar</code>, Doku & Shaderlar için <code className="text-[#e8553a]">.zip</code> dosyalarını atın.
+            Modlar için <code className="text-[#e8553a]">.jar</code>, Doku & Shaderlar için <code className="text-[#e8553a]">.zip</code> dosyalarını atın veya **tıklayıp seçin**.
           </div>
         </div>
       </div>

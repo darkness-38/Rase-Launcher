@@ -7,6 +7,7 @@ interface VersionDropdownProps {
   setSelectedLoader: (l: 'vanilla' | 'fabric' | 'forge') => void;
   availableVersions: string[];
   installedVersions: string[];
+  showModded?: boolean;
 }
 
 export const VersionDropdown: React.FC<VersionDropdownProps> = ({
@@ -16,6 +17,7 @@ export const VersionDropdown: React.FC<VersionDropdownProps> = ({
   setSelectedLoader,
   availableVersions,
   installedVersions,
+  showModded,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,11 +36,13 @@ export const VersionDropdown: React.FC<VersionDropdownProps> = ({
     setIsOpen(false);
   };
 
-  const loaderConfig = [
+  const loaderConfig: { readonly id: 'vanilla' | 'fabric' | 'forge'; readonly name: string; readonly iconClass: string }[] = [
     { id: 'vanilla', name: 'Vanilla', iconClass: 'ti ti-sparkles' },
-    { id: 'fabric', name: 'Fabric', iconClass: 'ti ti-cpu' },
-    { id: 'forge', name: 'Forge', iconClass: 'ti ti-hammer' },
-  ] as const;
+    ...(showModded !== false ? [
+      { id: 'fabric' as const, name: 'Fabric', iconClass: 'ti ti-cpu' },
+      { id: 'forge' as const, name: 'Forge', iconClass: 'ti ti-hammer' }
+    ] : [])
+  ];
 
   return (
     <div className="dropdown-wrap">

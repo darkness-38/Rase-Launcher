@@ -6,8 +6,64 @@ import { spawn } from 'child_process';
 import AdmZip from 'adm-zip';
 // @ts-ignore
 import { Client, Authenticator } from 'minecraft-launcher-core';
+// @ts-ignore
+import DiscordRPC from 'discord-rpc';
 
 let mainWindow: BrowserWindow | null = null;
+
+// ==========================================
+// DISCORD RICH PRESENCE (RPC) SERVICE
+// ==========================================
+const discordClientId = '1507680892745941012';
+let rpcClient: any = null;
+let rpcConnected = false;
+
+function updateDiscordPresence(details: string, state?: string, showTime = false) {
+  if (!rpcConnected || !rpcClient) return;
+  try {
+    const activity: any = {
+      details: details,
+      largeImageKey: 'rase_logo',
+      largeImageText: 'Rase Launcher',
+      instance: false
+    };
+    if (state) {
+      activity.state = state;
+    }
+    if (showTime) {
+      activity.startTimestamp = Date.now();
+    }
+    rpcClient.setActivity(activity).catch(() => {});
+  } catch (e) {
+    console.error('Failed to set Discord activity', e);
+  }
+}
+
+function initializeDiscordRPC() {
+  try {
+    rpcClient = new DiscordRPC.Client({ transport: 'ipc' });
+    
+    rpcClient.on('ready', () => {
+      rpcConnected = true;
+      console.log('Discord Rich Presence is connected and ready!');
+      updateDiscordPresence('Ana Sayfada Geziniyor');
+    });
+
+    rpcClient.on('disconnected', () => {
+      rpcConnected = false;
+      console.log('Discord Rich Presence disconnected. Retrying in 15s...');
+      setTimeout(initializeDiscordRPC, 15000);
+    });
+
+    rpcClient.login({ clientId: discordClientId }).catch((err: any) => {
+      console.warn('Discord login failed (Discord might not be running). Retrying in 20s...', err.message);
+      rpcConnected = false;
+      setTimeout(initializeDiscordRPC, 20000);
+    });
+  } catch (e) {
+    console.error('Failed to initialize Discord RPC module', e);
+  }
+}
 
 // Determine Platform & Default Game Directory
 const isWindows = process.platform === 'win32';
@@ -33,6 +89,12 @@ interface Settings {
   totalPlayTimeMs?: number;    // Accumulated play time in ms
   lastPlayedVersion?: string;  // e.g. "1.21.1 (Fabric)"
   lastPlayedAt?: number;       // Unix timestamp ms
+  lastVersion?: string;        // Last active version selection
+  lastLoader?: string;         // Last active loader selection
+  showSnapshots?: boolean;
+  showHistorical?: boolean;
+  showOnlyInstalled?: boolean;
+  showModded?: boolean;
 }
 
 let settings: Settings = {
@@ -41,7 +103,13 @@ let settings: Settings = {
   gameDir: defaultGameDir,
   lastUsername: '',
   savedUsernames: [],
-  totalPlayTimeMs: 0
+  totalPlayTimeMs: 0,
+  lastVersion: '1.20.4',
+  lastLoader: 'vanilla',
+  showSnapshots: false,
+  showHistorical: false,
+  showOnlyInstalled: false,
+  showModded: true
 };
 
 if (fs.existsSync(settingsPath)) {
@@ -78,7 +146,8 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: false
     }
   });
 
@@ -97,6 +166,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
+  initializeDiscordRPC();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -118,24 +188,30 @@ ipcMain.handle('window-control', (_event, action: 'minimize' | 'close') => {
   if (action === 'close') mainWindow.close();
 });
 
-// Fetch Available Mojang Versions (Filtered from 1.7+ releases)
+// Fetch Available Mojang Versions (With type metadata)
 ipcMain.handle('get-available-versions', async () => {
   try {
     const res = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json');
     const data = (await res.json()) as any;
-    const releases = data.versions
-      .filter((v: any) => v.type === 'release')
-      .map((v: any) => v.id)
-      .filter((v: string) => {
-        const parts = v.split('.');
-        if (parts[0] !== '1') return false;
-        const major = parseInt(parts[1], 10);
-        return major >= 7; // Support classic PvP & modding versions (1.7.10, 1.8.9, 1.12.2+)
-      });
-    return releases;
+    const allVersions = data.versions.map((v: any) => ({
+      id: v.id,
+      type: v.type // 'release', 'snapshot', 'old_beta', 'old_alpha'
+    }));
+    return allVersions;
   } catch (e) {
     console.error('Failed to fetch Mojang versions, using fallback.', e);
-    return ['1.21.1', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.8.9', '1.7.10'];
+    return [
+      { id: '1.21.1', type: 'release' },
+      { id: '1.20.4', type: 'release' },
+      { id: '1.20.1', type: 'release' },
+      { id: '1.19.4', type: 'release' },
+      { id: '1.19.2', type: 'release' },
+      { id: '1.18.2', type: 'release' },
+      { id: '1.16.5', type: 'release' },
+      { id: '1.12.2', type: 'release' },
+      { id: '1.8.9', type: 'release' },
+      { id: '1.7.10', type: 'release' }
+    ];
   }
 });
 
@@ -149,7 +225,23 @@ ipcMain.handle('get-installed-versions', () => {
     const folders = fs.readdirSync(versionsDir);
     return folders.filter((f) => {
       const jsonPath = path.join(versionsDir, f, `${f}.json`);
-      return fs.existsSync(jsonPath);
+      const jarPath = path.join(versionsDir, f, `${f}.jar`);
+      
+      // JSON metadata file must exist
+      if (!fs.existsSync(jsonPath)) return false;
+      
+      // JAR executable file must exist
+      if (!fs.existsSync(jarPath)) return false;
+      
+      const stat = fs.statSync(jarPath);
+      
+      // If it's a Fabric instance, the JAR is a dummy file (minimum 22 bytes empty zip)
+      if (f.toLowerCase().includes('fabric')) {
+        return stat.size >= 22;
+      }
+      
+      // For Vanilla and Forge, the JAR is the full client and must be valid (> 10KB to support classic old versions)
+      return stat.size > 10 * 1024;
     });
   } catch (e) {
     return [];
@@ -183,6 +275,23 @@ ipcMain.handle('select-directory', async () => {
     return result.filePaths[0];
   }
   return null;
+});
+
+// Select Mod or Pack Files Dialog
+ipcMain.handle('select-mods-or-packs', async () => {
+  if (!mainWindow) return [];
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      { name: 'Minecraft Files (*.jar, *.zip)', extensions: ['jar', 'zip'] },
+      { name: 'Mods (*.jar)', extensions: ['jar'] },
+      { name: 'Texture/Shader Packs (*.zip)', extensions: ['zip'] }
+    ]
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    return result.filePaths;
+  }
+  return [];
 });
 
 // Helper to resolve and create isolated version instances game directory
@@ -499,6 +608,25 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
   });
   launcher.on('data', (e: string) => {
     mainWindow?.webContents.send('launch-log', e);
+
+    // ---- Discord RPC: Real-time log parsing ----
+    // Singleplayer: Minecraft logs when an integrated server starts
+    if (/Starting integrated connection|Starting internal server/i.test(e)) {
+      updateDiscordPresence('Tek Oyunculu', currentGameLabel, false);
+    }
+    // Multiplayer: Minecraft logs when connecting to a remote server
+    const mpMatch = e.match(/Connecting to ([\w.-]+)(?:,\s*(\d+))?/);
+    if (mpMatch) {
+      const serverIp = mpMatch[1];
+      updateDiscordPresence(`Çok Oyunculu (${serverIp})`, currentGameLabel, false);
+    }
+    // Return to game menu when disconnecting
+    if (/Stopping integrated connection|Disconnecting|Returning to main menu|disconnect\.disconnected/i.test(e)) {
+      updateDiscordPresence(currentGameLabel, undefined, false);
+    }
+  });
+  launcher.on('arguments', (e: string[]) => {
+    mainWindow?.webContents.send('launch-log', `[LAUNCH COMMAND] ${e.join(' ')}`);
   });
   launcher.on('progress', (e: any) => {
     mainWindow?.webContents.send('launch-progress', e);
@@ -518,49 +646,23 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
   }
   saveSettingsData(settings);
 
-  // Determine Custom Version identifier
-  let versionName = version;
-  if (type === 'fabric') {
-    const loader = settings.latestFabricLoader || '0.15.11';
-    versionName = `fabric-loader-${loader}-${version}`;
-    const versionsDir = path.join(root, 'versions', versionName);
-    if (!fs.existsSync(versionsDir)) {
-      throw new Error(`Fabric version files do not exist. Please click install on Fabric first!`);
-    }
-
-    // Auto-repair 0-byte or corrupted dummy jar files to prevent Knot client ZipExceptions
-    const jarPath = path.join(versionsDir, `${versionName}.jar`);
-    let needsRepair = false;
-    try {
-      if (!fs.existsSync(jarPath) || fs.statSync(jarPath).size < 22) {
-        needsRepair = true;
-      }
-    } catch (e) {
-      needsRepair = true;
-    }
-
-    if (needsRepair) {
-      const emptyZip = Buffer.from([
-        0x50, 0x4b, 0x05, 0x06, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-      ]);
-      try {
-        fs.mkdirSync(versionsDir, { recursive: true });
-        fs.writeFileSync(jarPath, emptyZip);
-        mainWindow?.webContents.send('launch-log', `[Rase Launcher] Repaired empty/missing Fabric jar at: ${jarPath}`);
-      } catch (err: any) {
-        mainWindow?.webContents.send('launch-log', `[Rase Launcher] [WARNING] Failed to repair Fabric jar: ${err.message}`);
-      }
-    }
-
-    // CRITICAL: Ensure the vanilla Minecraft client jar exists for Fabric KnotClient
-    // Without this, Fabric throws "Minecraft game provider couldn't locate the game!"
+  // Verify and download/repair Vanilla files (Required for both Vanilla and Fabric launchers)
+  if (type === 'vanilla' || type === 'fabric') {
     const vanillaJarPath = path.join(root, 'versions', version, `${version}.jar`);
     const vanillaJsonPath = path.join(root, 'versions', version, `${version}.json`);
-    if (!fs.existsSync(vanillaJarPath) || fs.statSync(vanillaJarPath).size < 1024) {
-      mainWindow?.webContents.send('launch-status', { state: 'preparing', details: `Downloading Minecraft ${version} client jar (required by Fabric)...` });
-      mainWindow?.webContents.send('launch-log', `[Rase Launcher] Vanilla client jar missing — downloading for Fabric...`);
+    
+    let needsVanillaDownload = false;
+    try {
+      if (!fs.existsSync(vanillaJarPath) || !fs.existsSync(vanillaJsonPath) || fs.statSync(vanillaJarPath).size < 10 * 1024) {
+        needsVanillaDownload = true;
+      }
+    } catch (e) {
+      needsVanillaDownload = true;
+    }
+
+    if (needsVanillaDownload) {
+      mainWindow?.webContents.send('launch-status', { state: 'preparing', details: `Minecraft ${version} istemci dosyaları indiriliyor...` });
+      mainWindow?.webContents.send('launch-log', `[Rase Launcher] Minecraft ${version} files missing or incomplete — downloading...`);
       try {
         const manifestRes = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json');
         const manifest = (await manifestRes.json()) as any;
@@ -594,7 +696,6 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
               state: 'preparing',
               details: `Minecraft ${version} istemci indiriliyor: ${Math.round(downloaded2 / 1024 / 1024)} / ${Math.round(contentLength / 1024 / 1024)} MB (${pct2}%)`
             });
-            // Also send launch-progress so the progress bar updates
             mainWindow?.webContents.send('launch-progress', {
               type: 'download', task: `minecraft-${version}.jar`, current: downloaded2, total: contentLength
             });
@@ -602,23 +703,71 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
         }
         const clientBuffer = Buffer.concat(chunks2);
         fs.writeFileSync(vanillaJarPath, clientBuffer);
-        mainWindow?.webContents.send('launch-log', `[Rase Launcher] Vanilla client jar downloaded: ${clientBuffer.length} bytes`);
+        mainWindow?.webContents.send('launch-log', `[Rase Launcher] Minecraft ${version} client jar downloaded: ${clientBuffer.length} bytes`);
       } catch (dlErr: any) {
-        throw new Error(`Failed to download vanilla client for Fabric: ${dlErr.message}`);
+        throw new Error(`Minecraft ${version} dosyaları indirilirken hata oluştu: ${dlErr.message}`);
+      }
+    }
+  }
+
+  // Determine Custom Version identifier
+  let versionName = version;
+  if (type === 'fabric') {
+    const loader = settings.latestFabricLoader || '0.15.11';
+    versionName = `fabric-loader-${loader}-${version}`;
+    const fabricVersionsDir = path.join(root, 'versions', versionName);
+    const fabricJarPath = path.join(fabricVersionsDir, `${versionName}.jar`);
+    const fabricJsonPath = path.join(fabricVersionsDir, `${versionName}.json`);
+
+    if (!fs.existsSync(fabricVersionsDir) || !fs.existsSync(fabricJsonPath)) {
+      throw new Error(`Fabric sürüm dosyaları mevcut değil. Lütfen önce Fabric kurulumunu yapın!`);
+    }
+
+    // Auto-repair 0-byte or corrupted dummy jar files to prevent Knot client ZipExceptions
+    let needsRepair = false;
+    try {
+      if (!fs.existsSync(fabricJarPath) || fs.statSync(fabricJarPath).size < 22) {
+        needsRepair = true;
+      }
+    } catch (e) {
+      needsRepair = true;
+    }
+
+    if (needsRepair) {
+      const emptyZip = Buffer.from([
+        0x50, 0x4b, 0x05, 0x06, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+      ]);
+      try {
+        fs.mkdirSync(fabricVersionsDir, { recursive: true });
+        fs.writeFileSync(fabricJarPath, emptyZip);
+        mainWindow?.webContents.send('launch-log', `[Rase Launcher] Repaired empty/missing Fabric jar at: ${fabricJarPath}`);
+      } catch (err: any) {
+        mainWindow?.webContents.send('launch-log', `[Rase Launcher] [WARNING] Failed to repair Fabric jar: ${err.message}`);
       }
     }
   } else if (type === 'forge') {
     const versionsDir = path.join(root, 'versions');
+    let forgeMatch = '';
     if (fs.existsSync(versionsDir)) {
       const folders = fs.readdirSync(versionsDir);
-      const forgeMatch = folders.find((f) => f.includes(version) && f.toLowerCase().includes('forge'));
-      if (forgeMatch) {
-        versionName = forgeMatch;
-      } else {
-        throw new Error(`Forge is not installed for ${version}. Please click install on Forge first!`);
+      const matched = folders.find((f) => f.includes(version) && f.toLowerCase().includes('forge'));
+      if (matched) {
+        forgeMatch = matched;
       }
-    } else {
-      throw new Error(`No versions found. Please click install on Forge first!`);
+    }
+
+    if (!forgeMatch) {
+      throw new Error(`Minecraft ${version} için Forge kurulu değil. Lütfen önce Forge kurun!`);
+    }
+
+    versionName = forgeMatch;
+    const forgeJarPath = path.join(versionsDir, versionName, `${versionName}.jar`);
+    const forgeJsonPath = path.join(versionsDir, versionName, `${versionName}.json`);
+
+    if (!fs.existsSync(forgeJarPath) || !fs.existsSync(forgeJsonPath) || fs.statSync(forgeJarPath).size < 10 * 1024) {
+      throw new Error(`Forge dosyaları eksik veya bozuk. Lütfen Forge kurulumunu tekrar yapın!`);
     }
   }
 
@@ -629,7 +778,11 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
     authorization: auth,
     root: root,
     overrides: {
-      gameDirectory: instanceDir
+      gameDirectory: instanceDir,
+      // Force MCLC to include the actual vanilla Minecraft client jar on the classpath for custom loaders
+      minecraftJar: type !== 'vanilla'
+        ? path.join(root, 'versions', version, `${version}.jar`)
+        : undefined
     },
     version: {
       number: version,
@@ -670,6 +823,9 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
     ? `${version} (Forge)`
     : `${version} (Vanilla)`;
 
+  // Discord RPC: label used for "in-game" state and when returning from server/world
+  const currentGameLabel = playedVersionLabel;
+
   try {
     // Listen to MCLC close event so we can accumulate play time
     launcher.on('close', () => {
@@ -678,9 +834,14 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
       settings.lastPlayedAt = Date.now();
       saveSettingsData(settings);
       mainWindow?.webContents.send('launch-status', { state: 'closed' });
+      // Discord RPC: revert to launcher browsing state when game closes
+      updateDiscordPresence('Ana Sayfada Geziniyor');
     });
 
     launcher.launch(launchOptions);
+
+    // Discord RPC: show version label once game has launched
+    updateDiscordPresence(playedVersionLabel, undefined, true);
 
     // Record which version was last played
     settings.lastPlayedVersion = playedVersionLabel;
@@ -698,6 +859,8 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
 
     return { success: true };
   } catch (e: any) {
+    // Discord RPC: revert to launcher state if launch fails
+    updateDiscordPresence('Ana Sayfada Geziniyor');
     mainWindow.webContents.send('launch-status', { state: 'error', details: e.message });
     throw e;
   }

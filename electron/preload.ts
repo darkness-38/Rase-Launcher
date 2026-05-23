@@ -32,6 +32,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('open-folder', { type, version, loaderType }),
   installModOrPack: (filePath: string, version?: string, loaderType?: string) =>
     ipcRenderer.invoke('install-mod-or-pack', { filePath, version, loaderType }),
+  selectModsOrPacks: () =>
+    ipcRenderer.invoke('select-mods-or-packs'),
 
   // Event Listeners for Progress and Status (Forwarding IPC events to React)
   onLaunchProgress: (callback: (progress: { type: string; task: string; current: number; total: number }) => void) => {
