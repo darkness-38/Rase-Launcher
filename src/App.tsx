@@ -413,6 +413,18 @@ export default function App() {
     );
   };
 
+  const getRequiredJavaVersion = (mcVersion: string): number => {
+    if (mcVersion.startsWith('1.21') || mcVersion.startsWith('1.20.5') || mcVersion.startsWith('1.20.6')) {
+      return 21;
+    }
+    if (mcVersion.startsWith('1.17') || mcVersion.startsWith('1.18') || mcVersion.startsWith('1.19') || mcVersion.startsWith('1.20')) {
+      return 17;
+    }
+    return 8;
+  };
+
+  const isDownloadingJava = launchState === 'preparing' && (statusMessage.toLowerCase().includes('java') || statusMessage.toLowerCase().includes('jre'));
+
   // Launch or Install Button Trigger
   const handleLaunchOrInstall = async () => {
     if (!username.trim()) {
@@ -868,45 +880,70 @@ export default function App() {
                         style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minHeight: 0 }}
                       >
                         {/* Play Card (Retro Charcoal Card) */}
-                        <div className="play-card">
-                          <div className="play-icon">
-                            <i className="ti ti-player-play" style={{ fontSize: '24px', color: '#ffffff' }} />
-                          </div>
-                          
-                          <div className="play-info">
-                            <div className="play-label">Seçili Sürüm</div>
-                            <div className="play-version">
-                              Minecraft {selectedVersion}
-                              {selectedLoader === 'fabric' && <span className="fabric-tag">Fabric</span>}
-                              {selectedLoader === 'forge' && <span className="fabric-tag" style={{ background: '#3d2b1f', color: '#e88d4a' }}>Forge</span>}
-                              {selectedLoader === 'vanilla' && <span className="fabric-tag" style={{ background: '#213523', color: '#5aa85c' }}>Vanilla</span>}
+                        <div className="play-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div className="play-icon">
+                              <i className="ti ti-player-play" style={{ fontSize: '24px', color: '#ffffff' }} />
                             </div>
+                            
+                            <div className="play-info">
+                              <div className="play-label">Seçili Sürüm</div>
+                              <div className="play-version">
+                                Minecraft {selectedVersion}
+                                {selectedLoader === 'fabric' && <span className="fabric-tag">Fabric</span>}
+                                {selectedLoader === 'forge' && <span className="fabric-tag" style={{ background: '#3d2b1f', color: '#e88d4a' }}>Forge</span>}
+                                {selectedLoader === 'vanilla' && <span className="fabric-tag" style={{ background: '#213523', color: '#5aa85c' }}>Vanilla</span>}
+                              </div>
+                            </div>
+
+                            <button 
+                              onClick={handleLaunchOrInstall}
+                              disabled={launchState !== 'idle'}
+                              className="play-btn"
+                              style={isDownloadingJava ? { backgroundColor: 'var(--color-terracotta)', cursor: 'not-allowed', width: '220px', justifyContent: 'center' } : undefined}
+                            >
+                              {isDownloadingJava ? (
+                                <>
+                                  <i className="animate-spin" style={{ display: 'inline-block' }}>
+                                    <i className="ti ti-download" style={{ fontSize: '16px' }} />
+                                  </i>
+                                  <span>Java v{getRequiredJavaVersion(selectedVersion)} İndiriliyor...</span>
+                                </>
+                              ) : launchState !== 'idle' ? (
+                                <>
+                                  <i className="animate-spin" style={{ display: 'inline-block' }}>
+                                    <i className="ti ti-refresh" style={{ fontSize: '16px' }} />
+                                  </i>
+                                  <span>Yükleniyor...</span>
+                                </>
+                              ) : isSelectedInstalled() ? (
+                                <>
+                                  <i className="ti ti-player-play" style={{ fontSize: '16px' }} />
+                                  <span>Oyna</span>
+                                </>
+                              ) : (
+                                <>
+                                  <i className="ti ti-refresh" style={{ fontSize: '16px' }} />
+                                  <span>Kur ve Oyna</span>
+                                </>
+                              )}
+                            </button>
                           </div>
 
-                          <button 
-                            onClick={handleLaunchOrInstall}
-                            disabled={launchState !== 'idle'}
-                            className="play-btn"
-                          >
-                            {launchState !== 'idle' ? (
-                              <>
-                              <i className="animate-spin" style={{ display: 'inline-block' }}>
-                                <i className="ti ti-refresh" style={{ fontSize: '16px' }} />
-                              </i>
-                                <span>Yükleniyor...</span>
-                              </>
-                            ) : isSelectedInstalled() ? (
-                              <>
-                                <i className="ti ti-player-play" style={{ fontSize: '16px' }} />
-                                <span>Oyna</span>
-                              </>
-                            ) : (
-                              <>
-                                <i className="ti ti-refresh" style={{ fontSize: '16px' }} />
-                                <span>Kur ve Oyna</span>
-                              </>
-                            )}
-                          </button>
+                          {/* Java download progress bar */}
+                          {isDownloadingJava && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#8a857e', fontFamily: 'Space Mono, monospace' }}>
+                                <span>Java Runtime İndirme Durumu</span>
+                                <span style={{ color: 'var(--color-terracotta)', fontWeight: 'bold' }}>{progress}%</span>
+                              </div>
+                              <div style={{ background: 'rgba(216, 210, 198, 0.15)', borderRadius: '4px', height: '6px', overflow: 'hidden', border: '1px solid rgba(232, 85, 58, 0.1)' }}>
+                                <div
+                                  style={{ width: `${progress}%`, height: '100%', backgroundColor: 'var(--color-terracotta)', transition: 'width 0.25s ease', borderRadius: '4px' }}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Middle Settings: Version Selection Area inside an Info Card */}
