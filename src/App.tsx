@@ -1318,135 +1318,173 @@ export default function App() {
 
         {/* UPDATE AVAILABLE MODAL */}
         <AnimatePresence>
-          {showUpdateModal && latestVersionInfo && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 999, // Below loading overlay but above everything else
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.65)',
-                backdropFilter: 'blur(4px)'
-              }}
-              className="titlebar-no-drag"
-            >
+          {showUpdateModal && latestVersionInfo && (() => {
+            const isHotfix = latestVersionInfo.version.toLowerCase().includes('hotfix');
+            return (
               <motion.div
-                initial={{ scale: 0.95, y: 10 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.95, y: 10 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
                 style={{
-                  width: '420px',
-                  backgroundColor: '#1c1917',
-                  border: '1px solid #e8553a',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: isHotfix ? 10000 : 999, // Place above loading overlay if it is a hotfix
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '18px',
-                  position: 'relative'
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                  backdropFilter: 'blur(4px)'
                 }}
+                className="titlebar-no-drag"
               >
-                {/* Terracotta Top Ribbon */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: '#e8553a', borderTopLeftRadius: '11px', borderTopRightRadius: '11px' }} />
+                <motion.div
+                  initial={{ scale: 0.95, y: 10 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.95, y: 10 }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  style={{
+                    width: '420px',
+                    backgroundColor: '#1c1917',
+                    border: isHotfix ? '1px solid #ef4444' : '1px solid #e8553a', // Red border for hotfix
+                    borderRadius: '12px',
+                    padding: '24px',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '18px',
+                    position: 'relative'
+                  }}
+                >
+                  {/* Terracotta/Red Top Ribbon */}
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: isHotfix ? '#ef4444' : '#e8553a', borderTopLeftRadius: '11px', borderTopRightRadius: '11px' }} />
 
-                {/* Modal Header */}
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '4px' }}>
-                  <div style={{ width: '32px', height: '32px', backgroundColor: 'rgba(232, 85, 58, 0.1)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <i className="ti ti-download text-[#e8553a]" style={{ fontSize: '18px' }} />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#f5f0e8', margin: 0, lineHeight: 1.2 }}>Yeni Sürüm Mevcut!</h3>
-                    <p style={{ fontSize: '11px', color: '#8b857f', margin: 0 }}>Rase Launcher Güncellemesi ({latestVersionInfo.version})</p>
-                  </div>
-                </div>
-
-                {/* Modal Content */}
-                <div style={{ fontSize: '12.5px', color: '#dcd3c9', lineHeight: 1.5 }}>
-                  <p style={{ margin: '0 0 10px 0' }}>
-                    Rase Launcher'ın yeni bir sürümü yayınlandı. En son özellikler, hata düzeltmeleri ve performans iyileştirmeleri için şimdi güncelleyin.
-                  </p>
-                  {latestVersionInfo.body && (
-                    <div style={{
-                      maxHeight: '120px',
-                      overflowY: 'auto',
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      padding: '10px',
-                      borderRadius: '6px',
-                      fontFamily: 'monospace',
-                      fontSize: '11px',
-                      color: '#8b857f',
-                      border: '1px solid rgba(232, 85, 58, 0.05)'
-                    }} className="custom-scrollbar">
-                      {latestVersionInfo.body}
+                  {/* Modal Header */}
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '4px' }}>
+                    <div style={{ width: '32px', height: '32px', backgroundColor: isHotfix ? 'rgba(239, 68, 68, 0.1)' : 'rgba(232, 85, 58, 0.1)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className={`ti ti-${isHotfix ? 'alert-triangle' : 'download'} ${isHotfix ? 'text-[#ef4444]' : 'text-[#e8553a]'}`} style={{ fontSize: '18px' }} />
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#f5f0e8', margin: 0, lineHeight: 1.2 }}>
+                        {isHotfix ? 'Zorunlu Güncelleme Mevcut!' : 'Yeni Sürüm Mevcut!'}
+                      </h3>
+                      <p style={{ fontSize: '11px', color: '#8b857f', margin: 0 }}>
+                        {isHotfix ? 'Kritik Yama Güncellemesi' : 'Rase Launcher Güncellemesi'} ({latestVersionInfo.version})
+                      </p>
+                    </div>
+                  </div>
 
-                {/* Modal Actions */}
-                <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                  <button
-                    onClick={async () => {
-                      setShowUpdateModal(false);
-                      if (window.electronAPI && window.electronAPI.openExternal) {
-                        await window.electronAPI.openExternal(latestVersionInfo.url);
-                      } else {
-                        window.open(latestVersionInfo.url, '_blank');
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      backgroundColor: '#e8553a',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      padding: '10px 16px',
-                      fontSize: '13px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      transition: 'background-color 0.2s'
-                    }}
-                    className="hover-bright"
-                  >
-                    <i className="ti ti-download" style={{ fontSize: '15px' }} />
-                    Şimdi Yükle
-                  </button>
-                  <button
-                    onClick={() => setShowUpdateModal(false)}
-                    style={{
-                      flex: 1,
-                      backgroundColor: 'rgba(232, 85, 58, 0.05)',
-                      color: '#f5f0e8',
-                      border: '1px solid rgba(232, 85, 58, 0.15)',
-                      borderRadius: '6px',
-                      padding: '10px 16px',
-                      fontSize: '13px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s, border-color 0.2s'
-                    }}
-                    className="hover-bright"
-                  >
-                    Daha Sonra Hatırlat
-                  </button>
-                </div>
+                  {/* Modal Content */}
+                  <div style={{ fontSize: '12.5px', color: '#dcd3c9', lineHeight: 1.5 }}>
+                    <p style={{ margin: '0 0 10px 0' }}>
+                      {isHotfix ? (
+                        <span style={{ color: '#fca5a5', fontWeight: 'bold' }}>
+                          Bu güncelleme kritik hata düzeltmeleri (hotfix) içermektedir. Launcher'ı kullanmaya devam edebilmek için bu güncellemeyi yüklemeniz zorunludur.
+                        </span>
+                      ) : (
+                        "Rase Launcher'ın yeni bir sürümü yayınlandı. En son özellikler, hata düzeltmeleri ve performans iyileştirmeleri için şimdi güncelleyin."
+                      )}
+                    </p>
+                    {latestVersionInfo.body && (
+                      <div style={{
+                        maxHeight: '120px',
+                        overflowY: 'auto',
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        padding: '10px',
+                        borderRadius: '6px',
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                        color: '#8b857f',
+                        border: isHotfix ? '1px solid rgba(239, 68, 68, 0.1)' : '1px solid rgba(232, 85, 58, 0.05)'
+                      }} className="custom-scrollbar">
+                        {latestVersionInfo.body}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal Actions */}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                    <button
+                      onClick={async () => {
+                        if (!isHotfix) {
+                          setShowUpdateModal(false);
+                        }
+                        if (window.electronAPI && window.electronAPI.openExternal) {
+                          await window.electronAPI.openExternal(latestVersionInfo.url);
+                        } else {
+                          window.open(latestVersionInfo.url, '_blank');
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        backgroundColor: isHotfix ? '#ef4444' : '#e8553a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '10px 16px',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      className="hover-bright"
+                    >
+                      <i className="ti ti-download" style={{ fontSize: '15px' }} />
+                      Şimdi Yükle
+                    </button>
+                    {isHotfix ? (
+                      <button
+                        onClick={() => {
+                          window.electronAPI.windowControl?.('close');
+                        }}
+                        style={{
+                          flex: 1,
+                          backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                          color: '#fca5a5',
+                          border: '1px solid rgba(239, 68, 68, 0.2)',
+                          borderRadius: '6px',
+                          padding: '10px 16px',
+                          fontSize: '13px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s, border-color 0.2s'
+                        }}
+                        className="hover-bright"
+                      >
+                        Uygulamadan Çık
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowUpdateModal(false)}
+                        style={{
+                          flex: 1,
+                          backgroundColor: 'rgba(232, 85, 58, 0.05)',
+                          color: '#f5f0e8',
+                          border: '1px solid rgba(232, 85, 58, 0.15)',
+                          borderRadius: '6px',
+                          padding: '10px 16px',
+                          fontSize: '13px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s, border-color 0.2s'
+                        }}
+                        className="hover-bright"
+                      >
+                        Daha Sonra Hatırlat
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
+            );
+          })()}
         </AnimatePresence>
 
         {/* STARTUP APP LOADING OVERLAY */}
