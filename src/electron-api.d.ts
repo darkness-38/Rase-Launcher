@@ -80,6 +80,8 @@ declare global {
     openFolder: (type: 'mods' | 'resourcepacks' | 'shaderpacks' | 'root', version?: string, loaderType?: string, activeProfileId?: string | null) => Promise<{ success: boolean }>;
     installModOrPack: (filePath: string, version?: string, loaderType?: string, activeProfileId?: string | null) => Promise<{ success: boolean; fileName: string; type: 'mods' | 'resourcepacks' | 'shaderpacks' }>;
     selectModsOrPacks: () => Promise<string[]>;
+    getScreenshots: (activeProfileId?: string | null, version?: string, loaderType?: string) => Promise<{ path: string; name: string; created: number; profileName: string }[]>;
+    deleteScreenshot: (filePath: string) => Promise<{ success: boolean; error?: string }>;
 
     // Launch/Install Event Listeners
     onLaunchProgress: (

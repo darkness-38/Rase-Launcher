@@ -7,6 +7,7 @@ import { SettingsTab } from './components/SettingsTab';
 import { ProfilesTab } from './components/ProfilesTab';
 import { ThemesTab } from './components/ThemesTab';
 import { ExploreTab } from './components/ExploreTab';
+import { GalleryTab } from './components/GalleryTab';
 
 // Helper: parse installed version string to version and loader
 const parseInstalledVersion = (ver: string): { version: string; loader: 'vanilla' | 'fabric' | 'forge' } => {
@@ -29,7 +30,7 @@ export default function App() {
   // Navigation & User State
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'themes' | 'settings' | 'explore'>('play');
+  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'themes' | 'settings' | 'explore' | 'gallery'>('play');
   const [savedUsernames, setSavedUsernames] = useState<string[]>([]);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [newAccountInput, setNewAccountInput] = useState('');
@@ -973,6 +974,7 @@ export default function App() {
                       { id: 'explore', name: 'Keşfet', iconClass: 'ti ti-planet' },
                       { id: 'themes', name: 'Temalar', iconClass: 'ti ti-palette' },
                       { id: 'mods', name: 'Paketler & Modlar', iconClass: 'ti ti-box' },
+                      { id: 'gallery', name: 'Galeri', iconClass: 'ti ti-camera' },
                     ].map((tab) => {
                       const isActive = activeTab === tab.id;
 
@@ -1050,6 +1052,7 @@ export default function App() {
                     {activeTab === 'explore' && 'Mod Mağazası'}
                     {activeTab === 'themes' && 'Arayüz Temaları'}
                     {activeTab === 'mods' && 'Paketler & Modlar'}
+                    {activeTab === 'gallery' && 'Görsel Galerisi'}
                     {activeTab === 'settings' && 'Ayarlar'}
                   </div>
                   <div className="topbar-right">
@@ -1251,6 +1254,25 @@ export default function App() {
                           onInstallModpack={handleInstallModpack}
                           onInstallModOrPack={handleInstallModOrPack}
                           isInstalling={launchState !== 'idle'}
+                        />
+                      </motion.div>
+                    )}
+
+                    {/* TAB: GALLERY VIEW */}
+                    {activeTab === 'gallery' && (
+                      <motion.div
+                        key="gallery-view"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.18 }}
+                        style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+                      >
+                        <GalleryTab
+                          profiles={profiles}
+                          activeProfileId={activeProfileId}
+                          selectedVersion={selectedVersion}
+                          selectedLoader={selectedLoader}
                         />
                       </motion.div>
                     )}

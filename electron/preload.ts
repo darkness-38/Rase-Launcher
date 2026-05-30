@@ -40,6 +40,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('install-mod-or-pack', { filePath, version, loaderType, activeProfileId }),
   selectModsOrPacks: () =>
     ipcRenderer.invoke('select-mods-or-packs'),
+  getScreenshots: (activeProfileId?: string | null, version?: string, loaderType?: string) =>
+    ipcRenderer.invoke('get-screenshots', { activeProfileId, version, loaderType }),
+  deleteScreenshot: (filePath: string) =>
+    ipcRenderer.invoke('delete-screenshot', { filePath }),
 
   // Event Listeners for Progress and Status (Forwarding IPC events to React)
   onLaunchProgress: (callback: (progress: { type: string; task: string; current: number; total: number }) => void) => {

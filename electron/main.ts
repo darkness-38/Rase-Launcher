@@ -1,4 +1,9 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, protocol, net } from 'electron';
+
+// Register media-file as a privileged scheme to safely stream screenshots to React
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'media-file', privileges: { secure: true, bypassCSP: true, supportFetchAPI: true } }
+]);
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -169,6 +174,17 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Register custom media-file handler to stream screenshots
+  protocol.handle('media-file', (req) => {
+    try {
+      const filePath = decodeURIComponent(req.url.slice('media-file://'.length));
+      return net.fetch('file://' + path.normalize(filePath));
+    } catch (e) {
+      console.error('Failed to handle media-file protocol request:', e);
+      return new Response('File not found', { status: 404 });
+    }
+  });
+
   createWindow();
   initializeDiscordRPC();
 
@@ -1243,6 +1259,102 @@ ipcMain.handle('download-mod-or-pack', async (_event, { downloadUrl, fileName, p
   } catch (err: any) {
     console.error('Download mod or pack failed:', err);
     mainWindow.webContents.send('install-progress', { state: 'error', message: `Kurulum hatası: ${err.message}` });
+    return { success: false, error: err.message };
+  }
+});
+
+// Fetch Screenshots taken in-game
+ipcMain.handle('get-screenshots', async (_event, { activeProfileId, version, loaderType }) => {
+  const root = settings.gameDir || defaultGameDir;
+  const screenshots: { path: string; name: string; created: number; profileName: string }[] = [];
+
+  const scanDir = (dirPath: string, profileName: string) => {
+    if (fs.existsSync(dirPath)) {
+      try {
+        const files = fs.readdirSync(dirPath);
+        for (const file of files) {
+          const ext = path.extname(file).toLowerCase();
+          if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
+            const filePath = path.join(dirPath, file);
+            const stat = fs.statSync(filePath);
+            screenshots.push({
+              path: filePath,
+              name: file,
+              created: stat.mtimeMs,
+              profileName
+            });
+          }
+        }
+      } catch (e) {
+        console.error(`Failed to scan screenshots in ${dirPath}:`, e);
+      }
+    }
+  };
+
+  if (activeProfileId === 'all') {
+    // Scan root screenshots
+    scanDir(path.join(root, 'screenshots'), 'Genel (Vanilla)');
+    
+    // Scan all isolated profile folders
+    const profilesDir = path.join(root, 'profiles');
+    if (fs.existsSync(profilesDir)) {
+      try {
+        const dirs = fs.readdirSync(profilesDir);
+        for (const d of dirs) {
+          const profilePath = path.join(profilesDir, d);
+          if (fs.statSync(profilePath).isDirectory()) {
+            const profObj = (settings.profiles || []).find((p: any) => p.id === d);
+            const name = profObj ? profObj.name : d;
+            scanDir(path.join(profilePath, 'screenshots'), name);
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // Scan all isolated instances folders
+    const instancesDir = path.join(root, 'instances');
+    if (fs.existsSync(instancesDir)) {
+      try {
+        const dirs = fs.readdirSync(instancesDir);
+        for (const d of dirs) {
+          const instancePath = path.join(instancesDir, d);
+          if (fs.statSync(instancePath).isDirectory()) {
+            scanDir(path.join(instancePath, 'screenshots'), `İnstance: ${d}`);
+          }
+        }
+      } catch (e) {}
+    }
+  } else {
+    // Scan specific directory
+    let targetDir = root;
+    let label = 'Genel (Vanilla)';
+    
+    if (activeProfileId) {
+      targetDir = path.join(root, 'profiles', activeProfileId);
+      const profObj = (settings.profiles || []).find((p: any) => p.id === activeProfileId);
+      label = profObj ? profObj.name : 'Özel Profil';
+    } else if (version && loaderType) {
+      targetDir = path.join(root, 'instances', `${loaderType}-${version}`);
+      label = `${loaderType}-${version}`;
+    }
+    
+    scanDir(path.join(targetDir, 'screenshots'), label);
+  }
+
+  // Sort by created time descending (newest first)
+  return screenshots.sort((a, b) => b.created - a.created);
+});
+
+// Delete Screenshot File
+ipcMain.handle('delete-screenshot', async (_event, { filePath }) => {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      return { success: true };
+    }
+    return { success: false, error: 'File not found' };
+  } catch (err: any) {
+    console.error('Failed to delete screenshot:', err);
     return { success: false, error: err.message };
   }
 });
