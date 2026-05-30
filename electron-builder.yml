@@ -1,5 +1,6 @@
 appId: com.rase.launcher
 productName: Rase Launcher
+compression: store
 directories:
   output: dist-package # Output folder for compiled installers
 files:

@@ -26,6 +26,15 @@
 - Mod paketleri (Modpacks), Modlar, Kaynak Paketleri (Resource Packs) ve Shader'ları doğrudan arayıp tek tıkla yükleme.
 - **Sürüm Bazlı Instance Sistemi**: Yüklenen her mod veya paket seçili profilin/sürümün kendi klasörüne kurulur, ana oyunu asla bozmaz.
 
+### 📱 Telefon Kumandası (Web Dashboard) & Ses Mikseri
+- Oyun başladığında oluşturulan dinamik QR kodu telefondan taratarak bağlanabileceğiniz mobil optimize **Web Kumanda** paneli.
+- **Gerçek Zamanlı Sistem Durumu**: Telefon ekranında anlık CPU, RAM, FPS (Minecraft loglarından parse edilir) ve Oyun Süresi takibi.
+- **Sistem Medya Kontrolü**: Telefonunuz üzerinden sistem medya oynatıcısını oynat/durdur/ileri/geri yönetebilme.
+- **Uygulama Bazlı Ses Mikseri**: PulseAudio/Pipewire (Linux) ve PowerShell (Windows) entegrasyonu ile Minecraft (java), Chrome gibi arka planda ses çalan her uygulamayı telefondan ayrı ayrı susturabilme veya ses düzeyini değiştirebilme.
+
+### 🖼️ Çerçevesiz Tam Ekran (Borderless Fullscreen)
+- **Vanilla, Forge ve Fabric** sürümlerinde otomatik çerçevesiz pencere (borderless fullscreen) modu desteği.
+
 ### 🖼️ Premium Ekran Görüntüsü (Screenshot) Galerisi
 - Oyunda alınan **F2** ekran görüntülerini listeleyen şık, cam efektli galeri sekmesi.
 - **Dinamik Filtreleme**: Görselleri Seçili Profil, Genel Sürümler (Vanilla) veya Tüm Klasörler arasında filtreleme.
@@ -36,6 +45,7 @@
 - **Hızlı Kur (1-Tık)** ve **Gelişmiş Kurulum** (klasör seçimi, masaüstü/başlat menüsü kısayol kontrolleri) desteği.
 - Kurulum tamamlandığında göz alıcı **HTML5 Canvas konfeti patlama animasyonları**.
 - **Çevrimiçi (Online)** ve **Çevrimdışı (Offline)** derleme seçenekleri.
+- **Kritik Hata Giderimi**: Windows kurulumlarında `app.asar` dosyası ayıklanırken yaşanan kilitlenme ve yetki/chmod hataları tamamen düzeltildi.
 
 ### 🎵 Discord Zengin Varlık (Rich Presence) Desteği
 - Launcher açıkken: `Ana Sayfada Geziniyor`
@@ -59,8 +69,8 @@
 
 ### Linux Üzerinde Çalıştırma
 ```bash
-chmod +x "Rase Launcher-1.0.2-hotfix.AppImage"
-./"Rase Launcher-1.0.2-hotfix.AppImage"
+chmod +x "Rase Launcher-1.0.3-hotfix.AppImage"
+./"Rase Launcher-1.0.3-hotfix.AppImage"
 ```
 
 ---

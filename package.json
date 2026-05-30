@@ -1,7 +1,7 @@
 {
   "name": "rase-launcher",
   "private": true,
-  "version": "1.0.2-hotfix",
+  "version": "1.0.3-hotfix",
   "description": "A sleek, minimalist glassmorphism Minecraft Launcher.",
   "author": "Hamza",
   "type": "module",

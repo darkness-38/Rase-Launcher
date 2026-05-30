@@ -1,5 +1,6 @@
 appId: com.rase.setup
 productName: Rase Setup
+compression: store
 directories:
   output: dist-package
 files:

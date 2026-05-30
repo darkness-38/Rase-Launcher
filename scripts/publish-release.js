@@ -3,7 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+const VERSION = pkg.version;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -18,26 +22,28 @@ try {
 }
 const OWNER = 'darkness-38';
 const REPO = 'Rase-Launcher';
-const TAG = 'v1.0.2-hotfix';
-const RELEASE_NAME = 'v1.0.2-hotfix: Premium Screenshot Gallery & Custom Setup';
+const TAG = `v${VERSION}`;
+const RELEASE_NAME = `${TAG}: Phone Dashboard, Audio Mixer & Installer Hotfix`;
 
-const CHANGELOG = `### 🚀 Rase Launcher - v1.0.2-hotfix Changelog
+const CHANGELOG = `### 🚀 Rase Launcher - ${TAG} Changelog
 
-Bu güncelleme ile Rase Launcher'a yepyeni premium özellikler ve tamamen sıfırdan kodlanmış bağımsız bir kurulum sihirbazı eklenmiştir!
+Bu güncelleme ile Rase Launcher'a yepyeni mobil kontrol paneli (kumanda), oyun içi çerçevesiz tam ekran modu, ses mikseri ve kurulum sihirbazındaki kritik Windows kilitlenme/izin hatasının çözümü eklenmiştir!
 
-#### 🖼️ Ekran Görüntüsü (Screenshot) Galerisi ve Dinamik Filtreler
-* Minecraft'ta **F2** ile aldığınız tüm görselleri launcher içerisindeki **Galeri** sekmesinde sergileyen premium bir panel eklendi.
-* **Dinamik Filtreleme**: Görsellerinizi Seçili Profil, Genel Sürümler (Vanilla) veya Tüm Görseller arasında süzebilirsiniz.
-* **Tam Ekran Lightbox**: Görsellere tıklayarak tam ekran görüntüleyebilir, yön tuşlarıyla (Sol/Sağ) gezinebilir ve doğrudan silebilirsiniz.
+#### 📱 Telefon Kumandasını Bağla (Web Dashboard) & Ses Mikseri
+* Telefonunuzdan veya tabletinizden Minecraft'ı uzaktan yönetmenizi sağlayan **Web Tabanlı Kumanda** paneli eklendi!
+* **Gerçek Zamanlı Sistem Durumu**: RAM, CPU, FPS ve Oyun Süresi istatistikleri.
+* **Medya Kontrolü**: Telefonunuz üzerinden sistem medya oynatıcısını kontrol edebilme (Önceki ⏮, Başlat/Durdur ⏸, Sonraki ⏭).
+* **Per-App Ses Mikseri**: Minecraft, Chrome gibi arka planda ses çalan her uygulamayı ayrı ayrı telefondan ses kontrolü ve susturma (Mute) desteği.
 
-#### 🛠️ Özel Web Tabanlı Kurulum Sihirbazı (\`Rase Setup\`)
-* Sıfırdan Vite + Electron tabanlı, ultra hafif (sadece 16 KB ön yüz kodlu!) bağımsız bir kurulum sihirbazı kodlandı.
-* **Hızlı Kur (1-Tık)** ve **Gelişmiş Kurulum** (Özel dizin seçimi, kısayol yönetimi) özellikleri eklendi.
-* Kurulum sonu için yüksek performanslı HTML5 Canvas **konfeti animasyonları** entegre edildi.
+#### 🖼️ Çerçevesiz Tam Ekran (Borderless Fullscreen)
+* Vanilla, Forge ve Fabric sürümlerinde otomatik çerçevesiz tam ekran (Borderless) desteği eklendi.
 
-#### ⚙️ İyileştirmeler ve Hata Düzeltmeleri
-* Mod indirmelerinde oluşan bazı senkronizasyon gecikmeleri giderildi.
-* Electron CSP (İçerik Güvenlik Politikası) güvenlik kuralları güncellendi.`;
+#### 🔧 Kritik Windows Kurulum Kilitlenme ve İzin Hatası Çözümü (\`Rase Setup\`)
+* Windows üzerinde hem online hem offline \`.exe\` kurulumlarının **"dosyalar ayıklanıyor"** aşamasında 10 dakika boyunca kilitlenmesine ve ardından \`app.asar\` dosyasında \`chmod ENOENT\` (dosya bulunamadı) hatasıyla kurulumun yarıda kalmasına yol açan kritik Electron / ASAR sanallaştırma çakışması tamamen giderildi!
+* Kurulum sihirbazında dosya ayıklama işlemi sırasında Electron'un ASAR sanallaştırma motoru geçici olarak devre dışı bırakılarak kurulumun 2-3 saniye içinde başarıyla tamamlanması sağlandı.
+
+#### ⚡ Sıkıştırma Seviyesi ve Hızlı Derleme (Hotfix)
+* \`electron-builder\` paketleme ayarlarındaki sıkıştırma düzeyi \`store\` (sıfır sıkıştırma) seviyesine çekilerek kurulum exe ve AppImage derleme süreleri %90 oranında hızlandırıldı!`;
 
 // Helper: Perform authenticated https requests
 function request(options, body) {
@@ -197,7 +203,7 @@ async function main() {
     if (fs.existsSync(distPkgDir)) {
       const files = fs.readdirSync(distPkgDir);
       for (const file of files) {
-        if ((file.endsWith('.AppImage') || file.endsWith('.zip') || file.endsWith('.exe') || file.endsWith('.tar.gz')) && file.includes('1.0.2-hotfix')) {
+        if ((file.endsWith('.AppImage') || file.endsWith('.zip') || file.endsWith('.exe') || file.endsWith('.tar.gz')) && file.includes(VERSION)) {
           filesToUpload.push(path.join(distPkgDir, file));
         }
       }
@@ -208,7 +214,7 @@ async function main() {
     if (fs.existsSync(installerDistPkgDir)) {
       const files = fs.readdirSync(installerDistPkgDir);
       for (const file of files) {
-        if (file.endsWith('.exe') && file.includes('1.0.2-hotfix')) {
+        if (file.endsWith('.exe') && file.includes(VERSION)) {
           filesToUpload.push(path.join(installerDistPkgDir, file));
         }
       }

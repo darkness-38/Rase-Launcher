@@ -1,7 +1,7 @@
 {
   "name": "rase-installer",
   "private": true,
-  "version": "1.0.2-hotfix",
+  "version": "1.0.3-hotfix",
   "description": "Sleek glassmorphism installation wizard for Rase Launcher.",
   "main": "dist-electron/main.cjs",
   "type": "module",
@@ -12,9 +12,9 @@
     "dev:electron": "npm run build:electron && electron dist-electron/main.cjs",
     "dev": "concurrently -n frontend,electron -c cyan,magenta \"npm run dev:frontend\" \"npm run dev:electron\"",
     "build": "npm run build:frontend && npm run build:electron",
-    "dist": "npm run build && electron-builder",
-    "dist:online": "rm -rf bundle && npm run build && electron-builder",
-    "dist:offline": "mkdir -p bundle && cp ../dist-package/*.zip bundle/rase-launcher.zip || echo 'Warning: Main App ZIP not found. Building empty offline setup.' && npm run build && electron-builder"
+    "dist": "npm run build && electron-builder --win",
+    "dist:online": "rm -rf bundle && npm run build && electron-builder --win",
+    "dist:offline": "mkdir -p bundle && cp ../dist-package/*.zip bundle/rase-launcher.zip || echo 'Warning: Main App ZIP not found. Building empty offline setup.' && npm run build && electron-builder --win"
   },
   "dependencies": {
     "adm-zip": "^0.5.17"
