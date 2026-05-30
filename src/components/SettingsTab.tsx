@@ -261,8 +261,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
                 }}
               />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#1c1917' }}>Sadece Yüklü Sürümleri Göster</span>
-                <span style={{ fontSize: '11px', color: '#8a857e' }}>Yalnızca yerel cihazınızda indirilmiş sürümleri listeler.</span>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)' }}>Sadece Yüklü Sürümleri Göster</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Yalnızca yerel cihazınızda indirilmiş sürümleri listeler.</span>
               </div>
             </label>
 
@@ -279,8 +279,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
                 }}
               />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#1c1917' }}>Modlu (Forge/Fabric) Sürümleri Göster</span>
-                <span style={{ fontSize: '11px', color: '#8a857e' }}>Sürümler listesinde Forge ve Fabric mod motoru seçeneklerini aktif eder.</span>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)' }}>Modlu (Forge/Fabric) Sürümleri Göster</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Sürümler listesinde Forge ve Fabric mod motoru seçeneklerini aktif eder.</span>
               </div>
             </label>
           </div>

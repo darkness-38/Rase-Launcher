@@ -76,12 +76,12 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
       {/* Top Header Card */}
       <div className="info-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px' }}>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <div style={{ width: '36px', height: '36px', backgroundColor: 'rgba(232, 85, 58, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="ti ti-folder text-[#e8553a]" style={{ fontSize: '20px' }} />
+          <div style={{ width: '36px', height: '36px', backgroundColor: 'var(--color-accent-muted-bg)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="ti ti-folder" style={{ fontSize: '20px', color: 'var(--color-terracotta)' }} />
           </div>
           <div>
-            <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#f5f0e8', margin: 0 }}>Özel Profil Yöneticisi</h3>
-            <p style={{ fontSize: '11px', color: '#8b857f', margin: 0 }}>Kendine has dünyaları, modları ve ayarları olan bağımsız profiller oluşturun.</p>
+            <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-play-version)', margin: 0 }}>Özel Profil Yöneticisi</h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Kendine has dünyaları, modları ve ayarları olan bağımsız profiller oluşturun.</p>
           </div>
         </div>
         
@@ -90,9 +90,9 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
             <button
               onClick={() => onProfilesChanged(profiles, null)}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                color: '#8a857e',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                backgroundColor: 'var(--bg-tertiary)',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--border-sand)',
                 borderRadius: '6px',
                 padding: '8px 16px',
                 fontSize: '12.5px',
@@ -113,9 +113,9 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
           <button
             onClick={() => setShowAddForm(!showAddForm)}
             style={{
-              backgroundColor: showAddForm ? 'rgba(232, 85, 58, 0.1)' : 'var(--color-terracotta)',
-              color: showAddForm ? 'var(--color-terracotta)' : '#ffffff',
-              border: showAddForm ? '1px solid rgba(232, 85, 58, 0.2)' : 'none',
+              backgroundColor: showAddForm ? 'var(--color-accent-muted-bg)' : 'var(--color-terracotta)',
+              color: showAddForm ? 'var(--color-terracotta)' : 'var(--text-on-accent)',
+              border: showAddForm ? '1px solid var(--color-accent-muted-border)' : 'none',
               borderRadius: '6px',
               padding: '8px 16px',
               fontSize: '12.5px',
@@ -163,7 +163,7 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 className="settings-dir-input"
-                style={{ width: '100%', background: '#25211e', color: '#f5f0e8', border: '1px solid var(--border-sand)' }}
+                style={{ width: '100%', background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-sand)' }}
               >
                 {cleanVersions.map(v => (
                   <option key={v.id} value={v.id}>{v.id}</option>
@@ -183,9 +183,9 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
                     onClick={() => setLoader(type)}
                     style={{
                       flex: 1,
-                      backgroundColor: isSel ? 'rgba(232, 85, 58, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                      color: isSel ? 'var(--color-terracotta)' : '#8b857f',
-                      border: isSel ? '1px solid var(--color-terracotta)' : '1px solid rgba(255, 255, 255, 0.05)',
+                      backgroundColor: isSel ? 'var(--color-accent-muted-bg)' : 'var(--bg-tertiary)',
+                      color: isSel ? 'var(--color-terracotta)' : 'var(--text-muted)',
+                      border: isSel ? '1px solid var(--color-terracotta)' : '1px solid var(--border-sand)',
                       borderRadius: '6px',
                       padding: '10px',
                       fontSize: '12px',
@@ -207,7 +207,7 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
             onClick={handleCreateProfile}
             style={{
               backgroundColor: 'var(--color-terracotta)',
-              color: '#ffffff',
+              color: 'var(--text-on-accent)',
               border: 'none',
               borderRadius: '6px',
               padding: '12px',
@@ -236,7 +236,7 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
               key={profile.id}
               onClick={() => handleSelectProfile(profile.id)}
               style={{
-                background: isActive ? 'rgba(232, 85, 58, 0.04)' : 'var(--bg-charcoal)',
+                background: isActive ? 'var(--color-accent-muted-bg)' : 'var(--bg-sidebar)',
                 border: isActive ? '1.5px solid var(--color-terracotta)' : '1px solid var(--border-sand)',
                 borderRadius: '10px',
                 padding: '16px',
@@ -256,7 +256,7 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
                   top: '12px',
                   right: '12px',
                   backgroundColor: 'var(--color-terracotta)',
-                  color: '#ffffff',
+                  color: 'var(--text-on-accent)',
                   fontSize: '9px',
                   fontFamily: 'Space Mono, monospace',
                   fontWeight: 'bold',
@@ -269,7 +269,7 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
 
               {/* Title & metadata */}
               <div>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 'bold', color: '#f5f0e8', maxWidth: '80%' }}>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-play-version)', maxWidth: '80%' }}>
                   {profile.name}
                 </h4>
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -277,18 +277,18 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
                     profile.loader === 'fabric' 
                       ? { margin: 0 } 
                       : profile.loader === 'forge' 
-                      ? { margin: 0, background: '#3d2b1f', color: '#e88d4a' } 
-                      : { margin: 0, background: '#213523', color: '#5aa85c' }
+                      ? { margin: 0, background: 'var(--color-fabric-bg)', color: 'var(--color-fabric-text)' } 
+                      : { margin: 0, background: 'var(--bg-active-dark)', color: 'var(--color-success)' }
                   }>
                     {profile.loader}
                   </span>
-                  <span style={{ fontSize: '11.5px', color: '#8b857f', fontFamily: 'monospace' }}>{profile.version}</span>
+                  <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{profile.version}</span>
                 </div>
               </div>
 
               {/* Bottom line: Dates and actions */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.03)', paddingTop: '10px', marginTop: 'auto' }}>
-                <span style={{ fontSize: '10px', color: '#6b6560' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px', marginTop: 'auto' }}>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted-alt)' }}>
                   Oluşturulma: {new Date(profile.created).toLocaleDateString('tr-TR')}
                 </span>
                 
@@ -297,7 +297,7 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#6b6560',
+                    color: 'var(--text-muted)',
                     cursor: 'pointer',
                     padding: '4px',
                     display: 'flex',
@@ -305,8 +305,8 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
                     justifyContent: 'center',
                     transition: 'color 0.15s'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#6b6560'}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-delete-hover-text)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
                   title="Profili Sil"
                 >
                   <i className="ti ti-trash" style={{ fontSize: '14px' }} />
@@ -317,8 +317,8 @@ export const ProfilesTab: React.FC<ProfilesTabProps> = ({
         })}
 
         {profiles.length === 0 && !showAddForm && (
-          <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '40px 0', border: '1.5px dashed var(--border-sand)', borderRadius: '10px', color: '#8b857f', textAlign: 'center' }}>
-            <i className="ti ti-folder" style={{ fontSize: '32px', color: 'rgba(255, 255, 255, 0.1)' }} />
+          <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '40px 0', border: '1.5px dashed var(--border-sand)', borderRadius: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
+            <i className="ti ti-folder" style={{ fontSize: '32px', color: 'var(--color-idle)' }} />
             <div>
               <p style={{ margin: 0, fontSize: '13px', fontWeight: 'bold' }}>Henüz özel bir profiliniz yok.</p>
               <p style={{ margin: '4px 0 0 0', fontSize: '11px' }}>Kendi izole oyun dünyalarınızı yaratmak için "Yeni Profil" butonunu kullanın.</p>
