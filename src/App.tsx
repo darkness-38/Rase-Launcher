@@ -327,6 +327,37 @@ export default function App() {
     }
   };
 
+  const handleInstallModOrPack = async (fileName: string, downloadUrl: string, projectType: 'mod' | 'resourcepack' | 'shader') => {
+    if (!window.electronAPI) {
+      alert('Bu özellik yalnızca masaüstü uygulamasında kullanılabilir!');
+      return;
+    }
+
+    setLaunchState('installing');
+    setProgress(10);
+    setStatusMessage(`${fileName} indirilip kuruluyor...`);
+    setActiveTab('play');
+
+    try {
+      const res = await window.electronAPI.downloadModOrPack(downloadUrl, fileName, projectType, selectedVersion, selectedLoader);
+      if (!res.success) {
+        throw new Error(res.error || 'İndirme ve kurulum başarısız oldu.');
+      }
+
+      setProgress(100);
+      setStatusMessage(`${fileName} başarıyla kuruldu!`);
+      setTimeout(() => {
+        setLaunchState('idle');
+        setProgress(0);
+      }, 3000);
+    } catch (e: any) {
+      console.error('Failed to download mod/pack:', e);
+      setLaunchState('error');
+      setErrorDetails(e.message || 'Eklenti indirilirken hata oluştu.');
+      setStatusMessage('Yükleme başarısız oldu.');
+    }
+  };
+
   const handleThemeColorChanged = async (newColor: 'default' | 'forest' | 'ocean' | 'obsidian') => {
     setCurrentThemeColor(newColor);
     document.body.className = `theme-${newColor} layout-${currentThemeLayout}`;
@@ -943,7 +974,7 @@ export default function App() {
                     {[
                       { id: 'play', name: 'Ana Sayfa', iconClass: 'ti ti-home' },
                       { id: 'profiles', name: 'Profiller', iconClass: 'ti ti-folder' },
-                      { id: 'explore', name: 'Keşfet & Modpack', iconClass: 'ti ti-planet' },
+                      { id: 'explore', name: 'Keşfet', iconClass: 'ti ti-planet' },
                       { id: 'themes', name: 'Temalar', iconClass: 'ti ti-palette' },
                       { id: 'mods', name: 'Paketler & Modlar', iconClass: 'ti ti-box' },
                     ].map((tab) => {
@@ -1020,7 +1051,7 @@ export default function App() {
                   <div className="page-title">
                     {activeTab === 'play' && 'Ana Sayfa'}
                     {activeTab === 'profiles' && 'Özel Profiller'}
-                    {activeTab === 'explore' && 'Modpack Mağazası'}
+                    {activeTab === 'explore' && 'Mod Mağazası'}
                     {activeTab === 'themes' && 'Arayüz Temaları'}
                     {activeTab === 'mods' && 'Paketler & Modlar'}
                     {activeTab === 'settings' && 'Ayarlar'}
@@ -1222,6 +1253,7 @@ export default function App() {
                       >
                         <ExploreTab
                           onInstallModpack={handleInstallModpack}
+                          onInstallModOrPack={handleInstallModOrPack}
                           isInstalling={launchState !== 'idle'}
                         />
                       </motion.div>

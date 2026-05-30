@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
+type ProjectType = 'modpack' | 'mod' | 'resourcepack' | 'shader';
+
 interface ExploreTabProps {
   onInstallModpack: (modpackName: string, downloadUrl: string) => void;
+  onInstallModOrPack: (fileName: string, downloadUrl: string, projectType: 'mod' | 'resourcepack' | 'shader') => void;
   isInstalling: boolean;
 }
 
-interface ModpackItem {
+interface ModItem {
   project_id: string;
   slug: string;
   author: string;
@@ -18,26 +21,35 @@ interface ModpackItem {
   follows: number;
   icon_url: string;
   latest_version?: string;
+  project_type: ProjectType;
 }
 
-export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInstalling }) => {
+export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, onInstallModOrPack, isInstalling }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [modpacks, setModpacks] = useState<ModpackItem[]>([]);
-  const [selectedPack, setSelectedPack] = useState<ModpackItem | null>(null);
+  const [modpacks, setModpacks] = useState<ModItem[]>([]);
+  const [selectedPack, setSelectedPack] = useState<ModItem | null>(null);
   const [packVersions, setPackVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [selectedVersionFilter, setSelectedVersionFilter] = useState<string>('all');
+  const [activeCategory, setActiveCategory] = useState<ProjectType>('modpack');
 
   const supportedVersions = ['all', '1.21.1', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.8.9', '1.7.10'];
 
-  // Search Modpacks from Modrinth
-  const fetchModpacks = async (query = '', version = 'all') => {
+  const categoryLabels: { id: ProjectType; name: string; icon: string }[] = [
+    { id: 'modpack', name: 'Mod Paketleri', icon: 'ti ti-package' },
+    { id: 'mod', name: 'Tekil Modlar', icon: 'ti ti-box' },
+    { id: 'resourcepack', name: 'Doku Paketleri', icon: 'ti ti-photo' },
+    { id: 'shader', name: 'Shader (Gölgelendirici)', icon: 'ti ti-brightness' }
+  ];
+
+  // Search items
+  const fetchItems = async (query = '', category: ProjectType = 'modpack', version = 'all') => {
     setLoading(true);
     try {
-      let facets = '[["project_type:modpack"]]';
+      let facets = `[["project_type:${category}"]]`;
       if (version !== 'all') {
-        facets = `[["project_type:modpack"],["versions:${version}"]]`;
+        facets = `[["project_type:${category}"],["versions:${version}"]]`;
       }
       
       const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${encodeURIComponent(facets)}&limit=24&index=relevance`;
@@ -47,23 +59,23 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
         setModpacks(data.hits || []);
       }
     } catch (e) {
-      console.error('Failed to search Modrinth modpacks:', e);
+      console.error('Failed to search directory items:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  // Trigger search on mount and when filter changes
+  // Trigger search on mount and when filter/category changes
   useEffect(() => {
-    fetchModpacks(searchQuery, selectedVersionFilter);
-  }, [selectedVersionFilter]);
+    fetchItems(searchQuery, activeCategory, selectedVersionFilter);
+  }, [activeCategory, selectedVersionFilter]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchModpacks(searchQuery, selectedVersionFilter);
+    fetchItems(searchQuery, activeCategory, selectedVersionFilter);
   };
 
-  const handlePackClick = async (pack: ModpackItem) => {
+  const handlePackClick = async (pack: ModItem) => {
     setSelectedPack(pack);
     setLoadingVersions(true);
     try {
@@ -91,6 +103,41 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minHeight: 0 }} className="explore-tab-container">
+      {/* Category Tabs Selector */}
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-sand)', paddingBottom: '4px' }}>
+        {categoryLabels.map((cat) => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setActiveCategory(cat.id);
+                setModpacks([]); // Clear list to avoid flicker
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '10px 16px',
+                borderRadius: '8px 8px 0px 0px',
+                border: 'none',
+                borderBottom: isActive ? '3px solid var(--color-terracotta)' : '3px solid transparent',
+                backgroundColor: isActive ? 'var(--color-accent-muted-bg)' : 'transparent',
+                color: isActive ? 'var(--color-terracotta)' : 'var(--text-muted)',
+                fontWeight: isActive ? 'bold' : 'normal',
+                fontSize: '13px',
+                cursor: 'pointer',
+                transition: 'all 0.18s'
+              }}
+              className="hover-bright"
+            >
+              <i className={cat.icon} style={{ fontSize: '14px' }} />
+              {cat.name}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Search and Filters Header */}
       <div className="info-card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -99,8 +146,13 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
               <i className="ti ti-planet" style={{ fontSize: '20px', color: 'var(--color-terracotta)' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-play-version)', margin: 0 }}>Modrinth Modpack Keşfet</h3>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>En popüler Minecraft mod paketlerini doğrudan launcher içinden tek tıkla kurun.</p>
+              <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-play-version)', margin: 0 }}>Eklenti &amp; Paket Keşfet</h3>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                {activeCategory === 'modpack' && 'En popüler mod paketlerini tek tıkla yeni profil olarak kurun.'}
+                {activeCategory === 'mod' && 'Tekil modları anında mevcut seçili Minecraft profilinize indirin.'}
+                {activeCategory === 'resourcepack' && 'Doku paketlerini doğrudan mevcut doku klasörünüze ekleyin.'}
+                {activeCategory === 'shader' && 'Harika gölgelendirici paketlerini doğrudan shader klasörünüze yerleştirin.'}
+              </p>
             </div>
           </div>
         </div>
@@ -110,7 +162,7 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
             <i className="ti ti-search" style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', fontSize: '16px' }} />
             <input
               type="text"
-              placeholder="Mod paketi ara... (örn: Fabulously Optimized, Simply Optimized)"
+              placeholder={`${categoryLabels.find(c => c.id === activeCategory)?.name} ara...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -181,12 +233,12 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' }}>
             <div className="loader-spinner" style={{ width: '32px', height: '32px', border: '3px solid var(--border-sand)', borderTopColor: 'var(--color-terracotta)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Modrinth kataloğu aranıyor...</span>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Aranıyor...</span>
           </div>
         ) : modpacks.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--text-muted)', gap: '8px' }}>
             <i className="ti ti-box" style={{ fontSize: '32px' }} />
-            <span style={{ fontSize: '13px' }}>Aramanıza uygun hiçbir mod paketi bulunamadı.</span>
+            <span style={{ fontSize: '13px' }}>Aramanıza uygun hiçbir eklenti bulunamadı.</span>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px', paddingBottom: '16px' }}>
@@ -323,12 +375,12 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
             {/* Scrollable details */}
             <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }} className="custom-scrollbar">
               <div>
-                <h5 style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 6px 0' }}>Paket Açıklaması</h5>
+                <h5 style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 6px 0' }}>Açıklama</h5>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4' }}>{selectedPack.description}</p>
               </div>
 
               <div>
-                <h5 style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 8px 0' }}>Mevcut Sürümler & Kurulum</h5>
+                <h5 style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 8px 0' }}>Mevcut Sürümler &amp; Kurulum</h5>
                 
                 {loadingVersions ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -336,14 +388,13 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
                     Sürümler yükleniyor...
                   </div>
                 ) : packVersions.length === 0 ? (
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Bu paket için uyumlu sürüm bulunamadı.</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Bu eklenti için uyumlu sürüm bulunamadı.</span>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px' }} className="custom-scrollbar">
                     {packVersions.slice(0, 10).map((v: any) => {
                       const fileObj = v.files?.find((f: any) => f.primary) || v.files?.[0];
                       if (!fileObj) return null;
 
-                      // Extract client required loaders
                       const gameVer = v.game_versions?.[0] || '1.20.1';
                       const loaderName = v.loaders?.[0] || 'fabric';
 
@@ -370,7 +421,11 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
                           </div>
                           <button
                             onClick={() => {
-                              onInstallModpack(selectedPack.title, fileObj.url);
+                              if (activeCategory === 'modpack') {
+                                onInstallModpack(selectedPack.title, fileObj.url);
+                              } else {
+                                onInstallModOrPack(fileObj.filename, fileObj.url, activeCategory as any);
+                              }
                               setSelectedPack(null);
                             }}
                             disabled={isInstalling}

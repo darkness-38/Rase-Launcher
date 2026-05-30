@@ -24,6 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
   downloadModpack: (profileId: string, downloadUrl: string) => ipcRenderer.invoke('download-modpack', { profileId, downloadUrl }),
+  downloadModOrPack: (downloadUrl: string, fileName: string, projectType: string, version?: string, loaderType?: string) =>
+    ipcRenderer.invoke('download-mod-or-pack', { downloadUrl, fileName, projectType, version, loaderType }),
   getSystemRam: () => ipcRenderer.invoke('get-system-ram'),
   getStats: () => ipcRenderer.invoke('get-stats'),
 

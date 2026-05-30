@@ -1195,3 +1195,53 @@ ipcMain.handle('download-modpack', async (_event, { profileId, downloadUrl }) =>
   }
 });
 
+// Download individual Mod, Resource Pack, or Shader Pack
+ipcMain.handle('download-mod-or-pack', async (_event, { downloadUrl, fileName, projectType, version, loaderType }) => {
+  if (!mainWindow) return { success: false, error: 'Main window not available' };
+  
+  try {
+    mainWindow.webContents.send('install-progress', { state: 'downloading', percent: 10, message: `${fileName} indiriliyor...` });
+    
+    const instanceDir = getInstanceDirectory(version, loaderType);
+    
+    let type: 'mods' | 'resourcepacks' | 'shaderpacks' | null = null;
+    if (projectType === 'mod') {
+      type = 'mods';
+    } else if (projectType === 'resourcepack') {
+      type = 'resourcepacks';
+    } else if (projectType === 'shader') {
+      type = 'shaderpacks';
+    } else {
+      // Fallback detection based on filename extension
+      const extension = path.extname(fileName).toLowerCase();
+      if (extension === '.jar') {
+        type = 'mods';
+      } else {
+        type = 'resourcepacks';
+      }
+    }
+    
+    const targetDir = path.join(instanceDir, type);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    
+    const destPath = path.join(targetDir, fileName);
+    
+    // Stream Download
+    const res = await fetch(downloadUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const buffer = await res.arrayBuffer();
+    fs.writeFileSync(destPath, Buffer.from(buffer));
+    
+    mainWindow.webContents.send('install-progress', { state: 'completed', percent: 100, message: `${fileName} başarıyla kuruldu!` });
+    
+    return { success: true };
+  } catch (err: any) {
+    console.error('Download mod or pack failed:', err);
+    mainWindow.webContents.send('install-progress', { state: 'error', message: `Kurulum hatası: ${err.message}` });
+    return { success: false, error: err.message };
+  }
+});
+

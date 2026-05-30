@@ -48,6 +48,7 @@ declare global {
       themeLayout?: 'classic' | 'dashboard';
     }>;
     downloadModpack: (profileId: string, downloadUrl: string) => Promise<{ success: boolean; minecraftVersion: string; loaderType: 'fabric' | 'forge' | 'vanilla'; error?: string }>;
+    downloadModOrPack: (downloadUrl: string, fileName: string, projectType: string, version?: string, loaderType?: string) => Promise<{ success: boolean; error?: string }>;
     saveSettings: (settings: {
       ram: number;
       javaPath: string;
