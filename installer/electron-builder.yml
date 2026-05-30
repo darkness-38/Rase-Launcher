@@ -1,0 +1,14 @@
+appId: com.rase.setup
+productName: Rase Setup
+directories:
+  output: dist-package
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - bundle/**/*
+  - package.json
+win:
+  target:
+    - portable
+portable:
+  artifactName: "${productName}-${version}.${ext}"

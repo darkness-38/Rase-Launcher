@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rase Setup</title>
+  
+  <!-- Font Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Icon Pack -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  
+  <!-- Embedded Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+    
+    <!-- Titlebar Header (Frameless Window Drag Handle) -->
+    <div id="titlebar">
+      <div class="titlebar-logo">
+        <i class="ti ti-diamond"></i>
+        <span>Rase Setup</span>
+      </div>
+      <div class="titlebar-controls">
+        <button id="btn-minimize" title="Minimize"><i class="ti ti-minus"></i></button>
+        <button id="btn-close" class="close" title="Close"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+
+    <!-- Active Content Panel -->
+    <div class="container">
+      
+      <!-- SCREEN 1: WELCOME / CONFIGURATION SCREEN -->
+      <div id="screen-welcome" class="screen active">
+        <div class="welcome-header">
+          <div class="launcher-logo">
+            <i class="ti ti-diamond"></i>
+          </div>
+          <h2>Rase Launcher Kurulum Sihirbazı</h2>
+          <p id="mode-text">Minecraft deneyiminizi zirveye taşımak için kuruluma hazır.</p>
+        </div>
+
+        <!-- Flow buttons -->
+        <div class="welcome-actions">
+          <button id="btn-quick-install" class="btn btn-primary">
+            <i class="ti ti-bolt"></i>
+            <span>Hızlı Kur</span>
+          </button>
+          <button id="btn-toggle-advanced" class="btn btn-secondary">
+            <i class="ti ti-settings"></i>
+            <span>Gelişmiş Kurulum</span>
+          </button>
+        </div>
+
+        <!-- Advanced expandable panel -->
+        <div id="advanced-panel" class="advanced-panel">
+          <div class="form-group">
+            <label>Kurulum Dizini:</label>
+            <div class="input-browse">
+              <input type="text" id="input-install-dir" readonly>
+              <button id="btn-browse" class="btn-icon"><i class="ti ti-folder-open"></i></button>
+            </div>
+          </div>
+          
+          <div class="checkbox-group">
+            <label class="checkbox-container">
+              <input type="checkbox" id="chk-desktop" checked>
+              <span class="checkmark"></span>
+              Masaüstü Kısayolu Oluştur
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="chk-startmenu" checked>
+              <span class="checkmark"></span>
+              Başlat Menüsüne Ekle
+            </label>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+            <button id="btn-start-install-advanced" class="btn btn-primary btn-sm">
+              Kurulumu Başlat
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: PROGRESS / INSTALLATION SCREEN -->
+      <div id="screen-progress" class="screen">
+        <div class="progress-header">
+          <div class="spinner">
+            <div class="double-bounce1"></div>
+            <div class="double-bounce2"></div>
+          </div>
+          <h3 id="progress-title">Kurulum Yapılıyor</h3>
+          <p id="progress-details">Dosyalar hazırlanıyor...</p>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar-track">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+          </div>
+          <div class="progress-percentage"><span id="progress-percent-text">0</span>%</div>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: SUCCESS / COMPLETE SCREEN -->
+      <div id="screen-success" class="screen">
+        <canvas id="confetti-canvas"></canvas>
+        <div class="success-header">
+          <div class="success-icon-badge animate-scale">
+            <i class="ti ti-circle-check"></i>
+          </div>
+          <h2>Kurulum Tamamlandı!</h2>
+          <p>Rase Launcher başarıyla bilgisayarınıza kuruldu. Hemen oynamaya başlayabilirsiniz!</p>
+        </div>
+
+        <div class="success-actions">
+          <button id="btn-launch" class="btn btn-primary">
+            <i class="ti ti-player-play"></i>
+            <span>Launcher'ı Başlat</span>
+          </button>
+          <button id="btn-exit" class="btn btn-secondary">Kapat</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Entry Script -->
+  <script type="module" src="./src/renderer.ts"></script>
+</body>
+</html>
