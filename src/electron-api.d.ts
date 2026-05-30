@@ -44,6 +44,7 @@ declare global {
       showModded?: boolean;
       profiles?: any[];
       activeProfileId?: string | null;
+      theme?: 'default' | 'forest' | 'ocean' | 'obsidian';
     }>;
     saveSettings: (settings: {
       ram: number;
@@ -60,6 +61,7 @@ declare global {
       showModded?: boolean;
       profiles?: any[];
       activeProfileId?: string | null;
+      theme?: 'default' | 'forest' | 'ocean' | 'obsidian';
     }) => Promise<any>;
     getSystemRam: () => Promise<number>;
     getStats: () => Promise<{

@@ -1446,3 +1446,117 @@ body {
   color: #f5f0e8;
   border-color: var(--bg-charcoal);
 }
+
+/* ==========================================
+   DYNAMIC COLOR THEMES & PALETTES
+   ========================================== */
+
+/* 1. Deep Forest Theme (Emerald & Sage) */
+body.theme-forest {
+  --bg-sand: #eef1ea;
+  --color-terracotta: #3e6b5c;
+  --color-terracotta-hover: #315449;
+  --border-sand: #d5dcd2;
+  --bg-secondary: #f3f6f1;
+  --bg-badge-orange: #edf5f1;
+  --border-badge-orange: #b8cdc3;
+  --text-badge-orange: #224237;
+}
+
+/* 2. Midnight Ocean Theme (Blue & Ice Blue) */
+body.theme-ocean {
+  --bg-sand: #eaf0f3;
+  --color-terracotta: #2c7a9b;
+  --color-terracotta-hover: #205c77;
+  --border-sand: #cbd8de;
+  --bg-secondary: #f1f6f8;
+  --bg-badge-orange: #ebf3f6;
+  --border-badge-orange: #add0dc;
+  --text-badge-orange: #17485e;
+}
+
+/* 3. Obsidian Twilight Theme (Dark Mode & Gold Accent) */
+body.theme-obsidian {
+  --bg-sand: #161412;
+  --bg-charcoal: #211e1c;
+  --color-terracotta: #e0a96d;
+  --color-terracotta-hover: #cca162;
+  --border-sand: #2a2624;
+  --bg-card: #211e1c;
+  --bg-secondary: #1a1715;
+  --bg-badge-orange: #2a221b;
+  --border-badge-orange: #4c3d2e;
+  --text-badge-orange: #e0a96d;
+
+  /* Global dark mode overrides for readability */
+  color: #ede8df !important;
+}
+
+/* Specific Obsidian dark-mode text & contrast overrides */
+body.theme-obsidian .page-title,
+body.theme-obsidian .ver-name,
+body.theme-obsidian .stat-n,
+body.theme-obsidian .card-title,
+body.theme-obsidian .settings-field-label,
+body.theme-obsidian .dropdown-label,
+body.theme-obsidian .nav-section,
+body.theme-obsidian .user-name,
+body.theme-obsidian .play-version,
+body.theme-obsidian .user-name {
+  color: #ede8df !important;
+}
+
+body.theme-obsidian .chip,
+body.theme-obsidian .stat-box,
+body.theme-obsidian .settings-dir-input,
+body.theme-obsidian .dropdown-trigger {
+  background: #24211f !important;
+  border-color: #383431 !important;
+  color: #c8c3bb !important;
+}
+
+body.theme-obsidian .dropdown-menu {
+  background: #24211f !important;
+  border-color: #383431 !important;
+}
+
+body.theme-obsidian .dropdown-item {
+  color: #c8c3bb !important;
+}
+
+body.theme-obsidian .dropdown-item:hover,
+body.theme-obsidian .dropdown-item.active {
+  background: #2d2926 !important;
+  color: #ffffff !important;
+}
+
+body.theme-obsidian .info-card,
+body.theme-obsidian .settings-card {
+  background: #211e1c !important;
+  border-color: #2d2926 !important;
+}
+
+body.theme-obsidian .info-card h3,
+body.theme-obsidian .info-card p,
+body.theme-obsidian .settings-card h3,
+body.theme-obsidian .settings-card p {
+  color: #ede8df !important;
+}
+
+body.theme-obsidian .info-card p,
+body.theme-obsidian .settings-card-desc,
+body.theme-obsidian .settings-card p {
+  color: #8a857e !important;
+}
+
+body.theme-obsidian .nav-item span {
+  color: #8a857e;
+}
+
+body.theme-obsidian .nav-item.active span {
+  color: #ffffff;
+}
+
+body.theme-obsidian .side-user {
+  border-top-color: #2d2926 !important;
+}

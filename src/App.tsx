@@ -93,6 +93,9 @@ export default function App() {
       const actId = (settings as any).activeProfileId || null;
       setProfiles(profs);
       setActiveProfileId(actId);
+
+      const activeTheme = settings.theme || 'default';
+      document.body.className = activeTheme !== 'default' ? `theme-${activeTheme}` : '';
       
       const activeProf = profs.find((p: any) => p.id === actId);
       if (activeProf) {

@@ -15,6 +15,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
   const [showModded, setShowModded] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+  const [theme, setTheme] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
 
   // Load settings on mount
   useEffect(() => {
@@ -32,6 +33,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setShowHistorical(false);
         setShowOnlyInstalled(false);
         setShowModded(true);
+        setTheme('default');
         return;
       }
       try {
@@ -46,6 +48,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setShowHistorical(current.showHistorical ?? false);
         setShowOnlyInstalled(current.showOnlyInstalled ?? false);
         setShowModded(current.showModded ?? true);
+        setTheme((current.theme as any) || 'default');
       } catch (e) {
         console.error('Failed to load settings', e);
       }
@@ -90,7 +93,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         showSnapshots,
         showHistorical,
         showOnlyInstalled,
-        showModded
+        showModded,
+        theme
       };
       await window.electronAPI.saveSettings(updated);
       setShowSavedToast(true);
@@ -283,6 +287,59 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
                 <span style={{ fontSize: '11px', color: '#8a857e' }}>Sürümler listesinde Forge ve Fabric mod motoru seçeneklerini aktif eder.</span>
               </div>
             </label>
+          </div>
+        </div>
+
+        {/* Dynamic Theme Selection Card */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <i className="ti ti-palette settings-card-icon" style={{ fontSize: '16px' }} />
+            <h3 className="settings-card-title">Dinamik Arayüz Teması</h3>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '10px' }}>
+            {[
+              { id: 'default' as const, name: 'Desert Terracotta', colors: ['#f0ece3', '#e8553a', '#1c1917'], desc: 'Varsayılan sıcak kum tonları ve pişmiş toprak kırmızısı' },
+              { id: 'forest' as const, name: 'Deep Forest', colors: ['#eef1ea', '#3e6b5c', '#1c1917'], desc: 'Organik zümrüt yeşili ve dinlendirici adaçayı tonları' },
+              { id: 'ocean' as const, name: 'Midnight Ocean', colors: ['#eaf0f3', '#2c7a9b', '#1c1917'], desc: 'Derin okyanus mavisi ve soğuk gri kum esintisi' },
+              { id: 'obsidian' as const, name: 'Obsidian Twilight', colors: ['#161412', '#e0a96d', '#211e1c'], desc: 'Siyah obsidyen karanlık mod ve altın kehribar detaylar' }
+            ].map((t) => {
+              const isSelected = theme === t.id;
+              return (
+                <div
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  style={{
+                    background: isSelected ? 'rgba(232, 85, 58, 0.04)' : 'var(--bg-secondary)',
+                    border: isSelected ? '1.5px solid var(--color-terracotta)' : '1px solid var(--border-sand)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    transition: 'all 0.15s'
+                  }}
+                  className="hover-bright"
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold' }} className="page-title">{t.name}</span>
+                    {isSelected && (
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-terracotta)' }} />
+                    )}
+                  </div>
+                  
+                  {/* Theme Color Preview Pills */}
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {t.colors.map((c, idx) => (
+                      <div key={idx} style={{ flex: 1, height: '14px', borderRadius: '3px', backgroundColor: c, border: '1px solid rgba(0,0,0,0.06)' }} />
+                    ))}
+                  </div>
+                  
+                  <span style={{ fontSize: '10.5px', color: '#8a857e', lineHeight: '1.3' }}>{t.desc}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
