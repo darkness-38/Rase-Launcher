@@ -52,7 +52,7 @@ export default function App() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [currentThemeColor, setCurrentThemeColor] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
-  const [currentThemeLayout, setCurrentThemeLayout] = useState<'classic' | 'dashboard' | 'retro'>('classic');
+  const [currentThemeLayout, setCurrentThemeLayout] = useState<'classic' | 'dashboard'>('classic');
 
   // Version Visibility States
   const [showSnapshots, setShowSnapshots] = useState(false);
@@ -278,7 +278,7 @@ export default function App() {
     }
   };
 
-  const handleThemeLayoutChanged = async (newLayout: 'classic' | 'dashboard' | 'retro') => {
+  const handleThemeLayoutChanged = async (newLayout: 'classic' | 'dashboard') => {
     setCurrentThemeLayout(newLayout);
     document.body.className = `theme-${currentThemeColor} layout-${newLayout}`;
     

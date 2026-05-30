@@ -2,9 +2,9 @@ import React from 'react';
 
 interface ThemesTabProps {
   currentThemeColor: 'default' | 'forest' | 'ocean' | 'obsidian';
-  currentThemeLayout: 'classic' | 'dashboard' | 'retro';
+  currentThemeLayout: 'classic' | 'dashboard';
   onThemeColorChanged: (color: 'default' | 'forest' | 'ocean' | 'obsidian') => void;
-  onThemeLayoutChanged: (layout: 'classic' | 'dashboard' | 'retro') => void;
+  onThemeLayoutChanged: (layout: 'classic' | 'dashboard') => void;
 }
 
 export const ThemesTab: React.FC<ThemesTabProps> = ({
@@ -32,12 +32,6 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
       name: 'Yatay Dashboard',
       iconClass: 'ti ti-layout-navbar',
       desc: 'Menünün yukarıya yatay yerleştiği, modern, akıcı ve geniş ekran düzeni.'
-    },
-    {
-      id: 'retro' as const,
-      name: 'Retro Arcade Grid',
-      iconClass: 'ti ti-device-gamepad',
-      desc: 'Köşeli hatlar, Space Mono pikselli yazı tipi ve nostaljik CRT çerçeveler.'
     }
   ];
 

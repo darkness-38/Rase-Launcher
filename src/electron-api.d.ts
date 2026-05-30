@@ -45,7 +45,7 @@ declare global {
       profiles?: any[];
       activeProfileId?: string | null;
       themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
-      themeLayout?: 'classic' | 'dashboard' | 'retro';
+      themeLayout?: 'classic' | 'dashboard';
     }>;
     saveSettings: (settings: {
       ram: number;
@@ -63,7 +63,7 @@ declare global {
       profiles?: any[];
       activeProfileId?: string | null;
       themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
-      themeLayout?: 'classic' | 'dashboard' | 'retro';
+      themeLayout?: 'classic' | 'dashboard';
     }) => Promise<any>;
     getSystemRam: () => Promise<number>;
     getStats: () => Promise<{
