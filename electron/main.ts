@@ -351,12 +351,18 @@ function getLocalIP(): string {
 }
 
 function getDashboardHTML(): string {
-  // Serve the static dashboard.html from the public directory
-  const htmlPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'public', 'dashboard.html')
-    : path.join(__dirname, '..', 'public', 'dashboard.html');
-  if (fs.existsSync(htmlPath)) {
-    return fs.readFileSync(htmlPath, 'utf8');
+  // Check multiple fail-safe paths in sequence to support packaged app.asar, unpacked, and dev modes
+  const paths = [
+    path.join(app.getAppPath(), 'dist', 'dashboard.html'),
+    path.join(__dirname, '..', 'dist', 'dashboard.html'),
+    path.join(__dirname, '..', 'public', 'dashboard.html'),
+    path.join(process.resourcesPath, 'public', 'dashboard.html')
+  ];
+
+  for (const p of paths) {
+    if (fs.existsSync(p)) {
+      return fs.readFileSync(p, 'utf8');
+    }
   }
   // Minimal fallback
   return '<html><body><h1>Rase Launcher Dashboard</h1><p>dashboard.html not found</p></body></html>';
@@ -583,6 +589,29 @@ app.whenReady().then(() => {
 
   createWindow();
   initializeDiscordRPC();
+
+  // Register Shift+F8 global shortcut to toggle/show phone connection panel (QR code) at any time
+  globalShortcut.register('Shift+F8', () => {
+    if (webDashboardServer) {
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        mainWindow.show();
+        mainWindow.focus();
+      }
+      
+      const localIP = getLocalIP();
+      const dashboardURL = `http://${localIP}:7823`;
+      QRCode.toDataURL(dashboardURL, {
+        color: { dark: '#e8553a', light: '#07080f' },
+        width: 256,
+        margin: 2
+      }).then(qrDataURL => {
+        mainWindow?.webContents.send('show-qr-popup', { qrDataURL, ipAddress: dashboardURL });
+      }).catch(e => {
+        console.error('[WebDashboard] QR generation failed on Shift+F8 shortcut:', e);
+      });
+    }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
