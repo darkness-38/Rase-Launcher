@@ -168,7 +168,7 @@ export default function App() {
       
       const latestTag = data.tag_name;
       const latestVersion = latestTag.replace(/^v/, '');
-      const currentVersion = '1.0.0';
+      const currentVersion = '1.0.1';
       
       const parseVersion = (v: string) => v.split('.').map(Number);
       const currentParts = parseVersion(currentVersion);
