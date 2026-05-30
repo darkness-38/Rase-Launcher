@@ -1,90 +1,192 @@
 import React from 'react';
 
 interface ThemesTabProps {
-  currentTheme: 'default' | 'forest' | 'ocean' | 'obsidian';
-  onThemeChanged: (theme: 'default' | 'forest' | 'ocean' | 'obsidian') => void;
+  currentThemeColor: 'default' | 'forest' | 'ocean' | 'obsidian';
+  currentThemeLayout: 'classic' | 'dashboard' | 'retro';
+  onThemeColorChanged: (color: 'default' | 'forest' | 'ocean' | 'obsidian') => void;
+  onThemeLayoutChanged: (layout: 'classic' | 'dashboard' | 'retro') => void;
 }
 
-export const ThemesTab: React.FC<ThemesTabProps> = ({ currentTheme, onThemeChanged }) => {
-  const themesList = [
-    { id: 'default' as const, name: 'Desert Terracotta', colors: ['#f0ece3', '#e8553a', '#1c1917'], desc: 'Varsayılan sıcak kum tonları ve pişmiş toprak kırmızısı' },
-    { id: 'forest' as const, name: 'Deep Forest', colors: ['#eef1ea', '#3e6b5c', '#1c1917'], desc: 'Organik zümrüt yeşili ve dinlendirici adaçayı tonları' },
-    { id: 'ocean' as const, name: 'Midnight Ocean', colors: ['#eaf0f3', '#2c7a9b', '#1c1917'], desc: 'Derin okyanus mavisi ve soğuk gri kum esintisi' },
-    { id: 'obsidian' as const, name: 'Obsidian Twilight', colors: ['#161412', '#e0a96d', '#211e1c'], desc: 'Siyah obsidyen karanlık mod ve altın kehribar detaylar' }
+export const ThemesTab: React.FC<ThemesTabProps> = ({
+  currentThemeColor,
+  currentThemeLayout,
+  onThemeColorChanged,
+  onThemeLayoutChanged
+}) => {
+  const colorThemesList = [
+    { id: 'default' as const, name: 'Desert Terracotta', colors: ['#f0ece3', '#e8553a', '#1c1917'], desc: 'Sıcak kum tonları ve premium toprak kırmızısı detaylar.' },
+    { id: 'forest' as const, name: 'Deep Forest', colors: ['#eef1ea', '#3e6b5c', '#1c1917'], desc: 'Zümrüt yeşili ve dinlendirici adaçayı tonları.' },
+    { id: 'ocean' as const, name: 'Midnight Ocean', colors: ['#eaf0f3', '#2c7a9b', '#1c1917'], desc: 'Derin okyanus mavisi ve soğuk gri rüzgar esintisi.' },
+    { id: 'obsidian' as const, name: 'Obsidian Twilight', colors: ['#161412', '#e0a96d', '#211e1c'], desc: 'Siyah obsidyen karanlık mod ve altın amber detaylar.' }
+  ];
+
+  const layoutThemesList = [
+    {
+      id: 'classic' as const,
+      name: 'Klasik Sol Menü',
+      iconClass: 'ti ti-layout-sidebar',
+      desc: 'Sol tarafta şık, minimal ve koyu bir kontrol menüsü olan klasik düzen.'
+    },
+    {
+      id: 'dashboard' as const,
+      name: 'Yatay Dashboard',
+      iconClass: 'ti ti-layout-navbar',
+      desc: 'Menünün yukarıya yatay yerleştiği, modern, akıcı ve geniş ekran düzeni.'
+    },
+    {
+      id: 'retro' as const,
+      name: 'Retro Arcade Grid',
+      iconClass: 'ti ti-device-gamepad',
+      desc: 'Köşeli hatlar, Space Mono pikselli yazı tipi ve nostaljik CRT çerçeveler.'
+    }
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minHeight: 0, overflowY: 'auto' }} className="custom-scrollbar">
-      {/* Top Header Card */}
-      <div className="info-card" style={{ display: 'flex', gap: '10px', alignItems: 'center', padding: '16px 20px' }}>
-        <div style={{ width: '36px', height: '36px', backgroundColor: 'rgba(232, 85, 58, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <i className="ti ti-palette text-[#e8553a]" style={{ fontSize: '20px' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1, minHeight: 0, overflowY: 'auto' }} className="custom-scrollbar">
+      
+      {/* Dynamic Swatch Header */}
+      <div className="info-card" style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '16px 20px' }}>
+        <div style={{ width: '38px', height: '38px', backgroundColor: 'rgba(232, 85, 58, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className="ti ti-palette text-[#e8553a]" style={{ fontSize: '22px' }} />
         </div>
         <div>
-          <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#f5f0e8', margin: 0 }}>Dinamik Arayüz Temaları</h3>
-          <p style={{ fontSize: '11px', color: '#8b857f', margin: 0 }}>Launcher görünümünü dilediğiniz premium renk paletiyle anında kişiselleştirin.</p>
+          <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#f5f0e8', margin: 0 }}>Görsel Arayüz Özelleştirme</h3>
+          <p style={{ fontSize: '11px', color: '#8b857f', margin: 0 }}>Hem renkleri hem de arayüz yerleşimini (layout) bağımsız olarak dilediğiniz gibi birleştirin.</p>
         </div>
       </div>
 
-      {/* Grid selector */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
-        {themesList.map((t) => {
-          const isSelected = currentTheme === t.id;
-          return (
-            <div
-              key={t.id}
-              onClick={() => onThemeChanged(t.id)}
-              style={{
-                background: isSelected ? 'rgba(232, 85, 58, 0.04)' : 'var(--bg-card)',
-                border: isSelected ? '1.5px solid var(--color-terracotta)' : '1px solid var(--border-sand)',
-                borderRadius: '10px',
-                padding: '16px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                transition: 'all 0.15s'
-              }}
-              className="hover-bright"
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px', fontWeight: 'bold' }} className="page-title">{t.name}</span>
-                {isSelected && (
-                  <span style={{
-                    backgroundColor: 'var(--color-terracotta)',
-                    color: '#ffffff',
-                    fontSize: '9px',
-                    fontFamily: 'Space Mono, monospace',
-                    fontWeight: 'bold',
-                    padding: '2px 8px',
-                    borderRadius: '4px'
-                  }}>
-                    AKTİF
-                  </span>
-                )}
-              </div>
+      {/* SECTION 1: COLOR PALETTES */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <i className="ti ti-color-swatch text-[#e8553a]" style={{ fontSize: '15px' }} />
+          <h4 style={{ fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8a857e' }}>Renk Paletleri</h4>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          {colorThemesList.map((t) => {
+            const isSelected = currentThemeColor === t.id;
+            return (
+              <div
+                key={t.id}
+                onClick={() => onThemeColorChanged(t.id)}
+                style={{
+                  background: isSelected ? 'rgba(232, 85, 58, 0.04)' : 'var(--bg-card)',
+                  border: isSelected ? '1.5px solid var(--color-terracotta)' : '1px solid var(--border-sand)',
+                  borderRadius: '10px',
+                  padding: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  transition: 'all 0.15s'
+                }}
+                className="hover-bright"
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13.5px', fontWeight: 'bold' }} className="page-title">{t.name}</span>
+                  {isSelected && (
+                    <span style={{
+                      backgroundColor: 'var(--color-terracotta)',
+                      color: '#ffffff',
+                      fontSize: '8px',
+                      fontFamily: 'Space Mono, monospace',
+                      fontWeight: 'bold',
+                      padding: '1px 6px',
+                      borderRadius: '3px'
+                    }}>
+                      SEÇİLİ
+                    </span>
+                  )}
+                </div>
 
-              {/* Color Swatches */}
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {t.colors.map((c, idx) => (
-                  <div 
-                    key={idx} 
-                    style={{ 
-                      flex: 1, 
-                      height: '20px', 
-                      borderRadius: '4px', 
-                      backgroundColor: c, 
-                      border: '1px solid rgba(0,0,0,0.06)' 
-                    }} 
-                  />
-                ))}
-              </div>
+                {/* Color preview bars */}
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {t.colors.map((c, idx) => (
+                    <div 
+                      key={idx} 
+                      style={{ 
+                        flex: 1, 
+                        height: '14px', 
+                        borderRadius: '3px', 
+                        backgroundColor: c, 
+                        border: '1px solid rgba(0,0,0,0.06)' 
+                      }} 
+                    />
+                  ))}
+                </div>
 
-              <span style={{ fontSize: '11.5px', color: '#8a857e', lineHeight: '1.4' }}>{t.desc}</span>
-            </div>
-          );
-        })}
+                <span style={{ fontSize: '11px', color: '#8a857e', lineHeight: '1.3' }}>{t.desc}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* SECTION 2: STRUCTURAL LAYOUTS */}
+      <div style={{ marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <i className="ti ti-layout-grid text-[#e8553a]" style={{ fontSize: '15px' }} />
+          <h4 style={{ fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8a857e' }}>Arayüz Tasarımları &amp; Düzenleri</h4>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {layoutThemesList.map((t) => {
+            const isSelected = currentThemeLayout === t.id;
+            return (
+              <div
+                key={t.id}
+                onClick={() => onThemeLayoutChanged(t.id)}
+                style={{
+                  background: isSelected ? 'rgba(232, 85, 58, 0.04)' : 'var(--bg-card)',
+                  border: isSelected ? '1.5px solid var(--color-terracotta)' : '1px solid var(--border-sand)',
+                  borderRadius: '10px',
+                  padding: '14px 18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  transition: 'all 0.15s'
+                }}
+                className="hover-bright"
+              >
+                <div style={{ 
+                  width: '38px', 
+                  height: '38px', 
+                  backgroundColor: isSelected ? 'rgba(232, 85, 58, 0.1)' : 'rgba(0,0,0,0.02)', 
+                  borderRadius: '8px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <i className={`${t.iconClass} ${isSelected ? 'text-[#e8553a]' : 'text-[#8a857e]'}`} style={{ fontSize: '20px' }} />
+                </div>
+                
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '13.5px', fontWeight: 'bold' }} className="page-title">{t.name}</span>
+                    {isSelected && (
+                      <span style={{
+                        backgroundColor: 'var(--color-terracotta)',
+                        color: '#ffffff',
+                        fontSize: '8px',
+                        fontFamily: 'Space Mono, monospace',
+                        fontWeight: 'bold',
+                        padding: '1px 6px',
+                        borderRadius: '3px'
+                      }}>
+                        AKTİF DÜZEN
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#8a857e', margin: '3px 0 0 0', lineHeight: '1.4' }}>{t.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
     </div>
   );
 };

@@ -15,7 +15,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
   const [showModded, setShowModded] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
-  const [theme, setTheme] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
 
   // Load settings on mount
   useEffect(() => {
@@ -33,7 +32,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setShowHistorical(false);
         setShowOnlyInstalled(false);
         setShowModded(true);
-        setTheme('default');
         return;
       }
       try {
@@ -48,7 +46,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setShowHistorical(current.showHistorical ?? false);
         setShowOnlyInstalled(current.showOnlyInstalled ?? false);
         setShowModded(current.showModded ?? true);
-        setTheme((current.theme as any) || 'default');
       } catch (e) {
         console.error('Failed to load settings', e);
       }
@@ -93,8 +90,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         showSnapshots,
         showHistorical,
         showOnlyInstalled,
-        showModded,
-        theme
+        showModded
       };
       await window.electronAPI.saveSettings(updated);
       setShowSavedToast(true);

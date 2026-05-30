@@ -97,7 +97,8 @@ interface Settings {
   showModded?: boolean;
   profiles?: any[];
   activeProfileId?: string | null;
-  theme?: string;
+  themeColor?: string;
+  themeLayout?: string;
 }
 
 let settings: Settings = {

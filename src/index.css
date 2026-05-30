@@ -1560,3 +1560,142 @@ body.theme-obsidian .nav-item.active span {
 body.theme-obsidian .side-user {
   border-top-color: #2d2926 !important;
 }
+
+/* ==========================================
+   STRUCTURAL DESIGN LAYOUTS
+   ========================================== */
+
+/* 1. Yatay Dashboard Layout (body.layout-dashboard) */
+body.layout-dashboard .wrap {
+  flex-direction: column !important;
+}
+
+body.layout-dashboard .side {
+  width: 100% !important;
+  height: 64px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 20px !important;
+  border-bottom: 1px solid var(--border-sand) !important;
+}
+
+body.layout-dashboard .side-top {
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+body.layout-dashboard .logo-mark {
+  margin-bottom: 0 !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+body.layout-dashboard .logo-name {
+  font-size: 14px !important;
+}
+
+body.layout-dashboard .logo-ver {
+  display: none !important;
+}
+
+body.layout-dashboard .side-nav {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 20px !important;
+}
+
+body.layout-dashboard .nav-section {
+  display: none !important; /* Hide section labels in header */
+}
+
+body.layout-dashboard .nav-item {
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+
+body.layout-dashboard .nav-pip {
+  display: none !important; /* Hide vertical pip */
+}
+
+body.layout-dashboard .side-user {
+  border-top: none !important;
+  padding: 0 !important;
+  margin-left: auto !important;
+}
+
+body.layout-dashboard .user-row {
+  gap: 8px !important;
+}
+
+body.layout-dashboard .user-status {
+  display: none !important; /* Hide status in header for clean look */
+}
+
+body.layout-dashboard .topbar {
+  display: none !important; /* Integrated header replaces topbar! */
+}
+
+body.layout-dashboard .content {
+  padding: 24px !important;
+}
+
+/* 2. Retro Arcade Layout (body.layout-retro) */
+body.layout-retro * {
+  border-radius: 0px !important;
+  font-family: 'Space Mono', monospace !important;
+}
+
+body.layout-retro .side {
+  border-right: 4px double var(--border-sand) !important;
+}
+
+body.layout-retro .info-card,
+body.layout-retro .settings-card,
+body.layout-retro .play-card,
+body.layout-retro .dropdown-trigger,
+body.layout-retro .settings-dir-input,
+body.layout-retro .play-btn,
+body.layout-retro .dropdown-menu {
+  border: 3px double var(--border-sand) !important;
+  box-shadow: none !important;
+}
+
+body.layout-retro .play-btn,
+body.layout-retro .loader-btn,
+body.layout-retro .dropdown-trigger {
+  text-transform: uppercase !important;
+  font-weight: bold !important;
+}
+
+body.layout-retro .play-btn:hover,
+body.layout-retro .loader-btn:hover,
+body.layout-retro .dropdown-trigger:hover {
+  background: var(--color-terracotta) !important;
+  color: #ffffff !important;
+}
+
+body.layout-retro .nav-item {
+  border: 1px dashed transparent !important;
+}
+
+body.layout-retro .nav-item.active {
+  border: 1px dashed var(--color-terracotta) !important;
+  background: rgba(232, 85, 58, 0.08) !important;
+}
+
+body.layout-retro .chip {
+  border: 3px double var(--border-sand) !important;
+  background: transparent !important;
+}
+
+body.layout-retro .fabric-tag {
+  border: 1px solid var(--border-sand) !important;
+}

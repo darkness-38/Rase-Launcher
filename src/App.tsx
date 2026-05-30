@@ -51,7 +51,8 @@ export default function App() {
   const [latestVersionInfo, setLatestVersionInfo] = useState<{ version: string; url: string; body?: string } | null>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
+  const [currentThemeColor, setCurrentThemeColor] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
+  const [currentThemeLayout, setCurrentThemeLayout] = useState<'classic' | 'dashboard' | 'retro'>('classic');
 
   // Version Visibility States
   const [showSnapshots, setShowSnapshots] = useState(false);
@@ -96,9 +97,11 @@ export default function App() {
       setProfiles(profs);
       setActiveProfileId(actId);
 
-      const activeTheme = (settings.theme as any) || 'default';
-      setCurrentTheme(activeTheme);
-      document.body.className = activeTheme !== 'default' ? `theme-${activeTheme}` : '';
+      const activeThemeColor = (settings.themeColor as any) || 'default';
+      const activeThemeLayout = (settings.themeLayout as any) || 'classic';
+      setCurrentThemeColor(activeThemeColor);
+      setCurrentThemeLayout(activeThemeLayout);
+      document.body.className = `theme-${activeThemeColor} layout-${activeThemeLayout}`;
       
       const activeProf = profs.find((p: any) => p.id === actId);
       if (activeProf) {
@@ -258,19 +261,36 @@ export default function App() {
     }
   };
 
-  const handleThemeChanged = async (newTheme: 'default' | 'forest' | 'ocean' | 'obsidian') => {
-    setCurrentTheme(newTheme);
-    document.body.className = newTheme !== 'default' ? `theme-${newTheme}` : '';
+  const handleThemeColorChanged = async (newColor: 'default' | 'forest' | 'ocean' | 'obsidian') => {
+    setCurrentThemeColor(newColor);
+    document.body.className = `theme-${newColor} layout-${currentThemeLayout}`;
     
     if (window.electronAPI) {
       try {
         const current = await window.electronAPI.getSettings();
         await window.electronAPI.saveSettings({
           ...current,
-          theme: newTheme
+          themeColor: newColor
         });
       } catch (e) {
-        console.error('Failed to save theme setting', e);
+        console.error('Failed to save theme color setting', e);
+      }
+    }
+  };
+
+  const handleThemeLayoutChanged = async (newLayout: 'classic' | 'dashboard' | 'retro') => {
+    setCurrentThemeLayout(newLayout);
+    document.body.className = `theme-${currentThemeColor} layout-${newLayout}`;
+    
+    if (window.electronAPI) {
+      try {
+        const current = await window.electronAPI.getSettings();
+        await window.electronAPI.saveSettings({
+          ...current,
+          themeLayout: newLayout
+        });
+      } catch (e) {
+        console.error('Failed to save theme layout setting', e);
       }
     }
   };
@@ -1132,7 +1152,12 @@ export default function App() {
                         transition={{ duration: 0.18 }}
                         style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
                       >
-                        <ThemesTab currentTheme={currentTheme} onThemeChanged={handleThemeChanged} />
+                        <ThemesTab
+                          currentThemeColor={currentThemeColor}
+                          currentThemeLayout={currentThemeLayout}
+                          onThemeColorChanged={handleThemeColorChanged}
+                          onThemeLayoutChanged={handleThemeLayoutChanged}
+                        />
                       </motion.div>
                     )}
 

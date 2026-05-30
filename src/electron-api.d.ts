@@ -44,7 +44,8 @@ declare global {
       showModded?: boolean;
       profiles?: any[];
       activeProfileId?: string | null;
-      theme?: 'default' | 'forest' | 'ocean' | 'obsidian';
+      themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
+      themeLayout?: 'classic' | 'dashboard' | 'retro';
     }>;
     saveSettings: (settings: {
       ram: number;
@@ -61,7 +62,8 @@ declare global {
       showModded?: boolean;
       profiles?: any[];
       activeProfileId?: string | null;
-      theme?: 'default' | 'forest' | 'ocean' | 'obsidian';
+      themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
+      themeLayout?: 'classic' | 'dashboard' | 'retro';
     }) => Promise<any>;
     getSystemRam: () => Promise<number>;
     getStats: () => Promise<{
