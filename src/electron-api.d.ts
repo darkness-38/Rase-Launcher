@@ -6,6 +6,9 @@ declare global {
     // @ts-ignore
     windowControl?: (action: 'minimize' | 'close') => Promise<void>;
 
+    // External links
+    openExternal?: (url: string) => Promise<{ success: boolean }>;
+
     // Core Launching IPCs
     launchGame: (
       username: string,

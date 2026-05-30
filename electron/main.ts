@@ -188,6 +188,12 @@ ipcMain.handle('window-control', (_event, action: 'minimize' | 'close') => {
   if (action === 'close') mainWindow.close();
 });
 
+// Handle Opening External URLs in default browser
+ipcMain.handle('open-external', async (_event, url: string) => {
+  await shell.openExternal(url);
+  return { success: true };
+});
+
 // Fetch Available Mojang Versions (With type metadata)
 ipcMain.handle('get-available-versions', async () => {
   try {

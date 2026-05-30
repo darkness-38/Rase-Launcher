@@ -4,6 +4,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Window Control
   windowControl: (action: 'minimize' | 'close') => ipcRenderer.invoke('window-control', action),
 
+  // External Links
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+
   // Game Launching
   launchGame: (username: string, version: string, type: 'vanilla' | 'fabric' | 'forge', options: { ram: number; javaPath?: string }) =>
     ipcRenderer.invoke('launch-game', { username, version, type, options }),
