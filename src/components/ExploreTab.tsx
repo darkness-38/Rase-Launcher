@@ -35,9 +35,9 @@ export const ExploreTab: React.FC<ExploreTabProps> = ({ onInstallModpack, isInst
   const fetchModpacks = async (query = '', version = 'all') => {
     setLoading(true);
     try {
-      let facets = '[["categories:modpack"]]';
+      let facets = '[["project_type:modpack"]]';
       if (version !== 'all') {
-        facets = `[["categories:modpack"],["versions:${version}"]]`;
+        facets = `[["project_type:modpack"],["versions:${version}"]]`;
       }
       
       const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${encodeURIComponent(facets)}&limit=24&index=relevance`;
