@@ -7,6 +7,8 @@ files:
   - dist-electron/**/*
   - bundle/**/*
   - package.json
+extraResources:
+  - bundle
 win:
   target:
     - portable

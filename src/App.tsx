@@ -8,6 +8,7 @@ import { ProfilesTab } from './components/ProfilesTab';
 import { ThemesTab } from './components/ThemesTab';
 import { ExploreTab } from './components/ExploreTab';
 import { GalleryTab } from './components/GalleryTab';
+import { QrPopup } from './components/QrPopup';
 
 // Helper: parse installed version string to version and loader
 const parseInstalledVersion = (ver: string): { version: string; loader: 'vanilla' | 'fabric' | 'forge' } => {
@@ -55,6 +56,9 @@ export default function App() {
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [currentThemeColor, setCurrentThemeColor] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
   const [currentThemeLayout, setCurrentThemeLayout] = useState<'classic' | 'dashboard'>('classic');
+
+  // QR Popup State (Web Dashboard)
+  const [qrPopupData, setQrPopupData] = useState<{ qrDataURL: string; ipAddress: string } | null>(null);
 
   // Version Visibility States
   const [showSnapshots, setShowSnapshots] = useState(false);
@@ -578,10 +582,19 @@ export default function App() {
       }
     });
 
+    // 4. QR Popup Listener (Web Dashboard)
+    let unsubQr: (() => void) | undefined;
+    if (window.electronAPI.onShowQrPopup) {
+      unsubQr = window.electronAPI.onShowQrPopup((data) => {
+        setQrPopupData(data);
+      });
+    }
+
     return () => {
       unsubProgress();
       unsubStatus();
       unsubInstall();
+      if (unsubQr) unsubQr();
     };
   }, [selectedVersion, selectedLoader]);
 
@@ -869,6 +882,15 @@ export default function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', userSelect: 'none', backgroundColor: '#f0ece3' }}>
       
+      {/* QR Popup — Web Dashboard phone connection */}
+      {qrPopupData && (
+        <QrPopup
+          qrDataURL={qrPopupData.qrDataURL}
+          ipAddress={qrPopupData.ipAddress}
+          onDismiss={() => setQrPopupData(null)}
+        />
+      )}
+
       {/* Dynamic Native Divider TitleBar */}
       <TitleBar />
 

@@ -191,12 +191,15 @@ ipcMain.handle('start-install', async (_event, { installDir, createDesktop, crea
     // 2. Extract files
     mainWindow?.webContents.send('install-progress', { state: 'extracting', percent: 80, details: 'Dosyalar ayıklanıyor...' });
     
+    const originalNoAsar = (process as any).noAsar;
     try {
+      (process as any).noAsar = true;
       const zip = new AdmZip(zipTempPath);
       zip.extractAllTo(installDir, true);
     } catch (zipErr: any) {
       throw new Error(`ZIP Extraction failed: ${zipErr.message}`);
     } finally {
+      (process as any).noAsar = originalNoAsar;
       // Clean up temporary download file
       try {
         if (fs.existsSync(zipTempPath)) {

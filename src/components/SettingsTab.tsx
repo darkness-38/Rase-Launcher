@@ -15,6 +15,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
   const [showModded, setShowModded] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+  const [borderlessFullscreen, setBorderlessFullscreen] = useState(true);
+  const [webDashboardEnabled, setWebDashboardEnabled] = useState(true);
 
   // Load settings on mount
   useEffect(() => {
@@ -46,6 +48,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         setShowHistorical(current.showHistorical ?? false);
         setShowOnlyInstalled(current.showOnlyInstalled ?? false);
         setShowModded(current.showModded ?? true);
+        setBorderlessFullscreen(current.borderlessFullscreen ?? true);
+        setWebDashboardEnabled(current.webDashboardEnabled ?? true);
       } catch (e) {
         console.error('Failed to load settings', e);
       }
@@ -90,7 +94,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
         showSnapshots,
         showHistorical,
         showOnlyInstalled,
-        showModded
+        showModded,
+        borderlessFullscreen,
+        webDashboardEnabled
       };
       await window.electronAPI.saveSettings(updated);
       setShowSavedToast(true);
@@ -281,6 +287,34 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onSettingsSaved }) => 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)' }}>Modlu (Forge/Fabric) Sürümleri Göster</span>
                 <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Sürümler listesinde Forge ve Fabric mod motoru seçeneklerini aktif eder.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Oyun Deneyimi Kartı */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <i className="ti ti-layout-dashboard settings-card-icon" style={{ fontSize: '16px' }} />
+            <h3 className="settings-card-title">Oyun Deneyimi</h3>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
+            {/* Borderless toggle */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }}>
+              <input type="checkbox" checked={borderlessFullscreen} onChange={(e) => setBorderlessFullscreen(e.target.checked)}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-terracotta)', cursor: 'pointer' }} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)' }}>Çerçevesiz Tam Ekran (Borderless)</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Oyunu çerçevesiz pencerede başlatır. Overlay ve telefon kumandası için gereklidir.</span>
+              </div>
+            </label>
+            {/* Web dashboard toggle */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }}>
+              <input type="checkbox" checked={webDashboardEnabled} onChange={(e) => setWebDashboardEnabled(e.target.checked)}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-terracotta)', cursor: 'pointer' }} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)' }}>Telefon Kumandası (Web Dashboard)</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Oyun başladığında LAN üzerinden telefona bağlanılabilir panel açar. Port: 7823</span>
               </div>
             </label>
           </div>

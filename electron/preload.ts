@@ -73,5 +73,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => {
       ipcRenderer.removeListener('install-progress', subscription);
     };
-  }
+  },
+
+  // Web Dashboard — QR Popup + Media Control
+  onShowQrPopup: (callback: (data: { qrDataURL: string; ipAddress: string }) => void) => {
+    const subscription = (_event: any, data: any) => callback(data);
+    ipcRenderer.on('show-qr-popup', subscription);
+    return () => {
+      ipcRenderer.removeListener('show-qr-popup', subscription);
+    };
+  },
+  mediaControl: (action: 'play' | 'pause' | 'next' | 'prev') =>
+    ipcRenderer.invoke('media-control', action),
 });

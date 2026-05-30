@@ -46,6 +46,8 @@ declare global {
       activeProfileId?: string | null;
       themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
       themeLayout?: 'classic' | 'dashboard';
+      borderlessFullscreen?: boolean;
+      webDashboardEnabled?: boolean;
     }>;
     downloadModpack: (profileId: string, downloadUrl: string) => Promise<{ success: boolean; minecraftVersion: string; loaderType: 'fabric' | 'forge' | 'vanilla'; error?: string }>;
     downloadModOrPack: (downloadUrl: string, fileName: string, projectType: string, version?: string, loaderType?: string) => Promise<{ success: boolean; error?: string }>;
@@ -66,6 +68,8 @@ declare global {
       activeProfileId?: string | null;
       themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
       themeLayout?: 'classic' | 'dashboard';
+      borderlessFullscreen?: boolean;
+      webDashboardEnabled?: boolean;
     }) => Promise<any>;
     getSystemRam: () => Promise<number>;
     getStats: () => Promise<{
@@ -94,6 +98,12 @@ declare global {
     onInstallProgress: (
       callback: (progress: { state: string; percent: number; message: string }) => void
     ) => () => void;
+
+    // Web Dashboard / QR Popup
+    onShowQrPopup: (
+      callback: (data: { qrDataURL: string; ipAddress: string }) => void
+    ) => () => void;
+    mediaControl: (action: 'play' | 'pause' | 'next' | 'prev') => Promise<void>;
   }
 
   interface Window {

@@ -10,6 +10,7 @@ win:
   target:
     - nsis             # Modern NSIS Installer executable
     - portable         # Single-file portable executable
+    - zip              # Portable ZIP archive
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

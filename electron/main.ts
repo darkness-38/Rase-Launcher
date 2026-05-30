@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, protocol, net } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, protocol, net, globalShortcut } from 'electron';
 
 // Register media-file as a privileged scheme to safely stream screenshots to React
 protocol.registerSchemesAsPrivileged([
@@ -7,12 +7,20 @@ protocol.registerSchemesAsPrivileged([
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { spawn, execSync } from 'child_process';
+import * as http from 'http';
+import { spawn, execSync, exec } from 'child_process';
 import AdmZip from 'adm-zip';
 // @ts-ignore
 import { Client, Authenticator } from 'minecraft-launcher-core';
 // @ts-ignore
 import DiscordRPC from 'discord-rpc';
+// @ts-ignore
+import express from 'express';
+// @ts-ignore
+import { WebSocketServer } from 'ws';
+// @ts-ignore
+import QRCode from 'qrcode';
+import si from 'systeminformation';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -104,6 +112,8 @@ interface Settings {
   activeProfileId?: string | null;
   themeColor?: string;
   themeLayout?: string;
+  borderlessFullscreen?: boolean;
+  webDashboardEnabled?: boolean;
 }
 
 let settings: Settings = {
@@ -118,7 +128,9 @@ let settings: Settings = {
   showSnapshots: false,
   showHistorical: false,
   showOnlyInstalled: false,
-  showModded: true
+  showModded: true,
+  borderlessFullscreen: true,
+  webDashboardEnabled: true
 };
 
 if (fs.existsSync(settingsPath)) {
@@ -142,6 +154,390 @@ if (fs.existsSync(settingsPath)) {
 function saveSettingsData(newSettings: Settings) {
   settings = newSettings;
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+}
+
+// ==========================================
+// WEB DASHBOARD STATE
+// ==========================================
+let webDashboardServer: http.Server | null = null;
+let gameStartTime: number | null = null;
+let currentFPS = 0; // Parsed from Minecraft log output
+
+// ==========================================
+// AUDIO SESSION TYPE
+// ==========================================
+interface AudioSession {
+  id: string;
+  name: string;
+  volume: number;  // 0.0 - 1.0
+  muted: boolean;
+}
+
+// Friendly name map for common process names
+const PROCESS_FRIENDLY_NAMES: Record<string, string> = {
+  'javaw.exe': 'Minecraft',
+  'java': 'Minecraft',
+  'spotify.exe': 'Spotify',
+  'spotify': 'Spotify',
+  'chrome.exe': 'Chrome',
+  'chromium': 'Chrome',
+  'firefox.exe': 'Firefox',
+  'firefox': 'Firefox',
+  'discord.exe': 'Discord',
+  'discord': 'Discord',
+  'vlc.exe': 'VLC',
+  'vlc': 'VLC',
+  'msedge.exe': 'Edge',
+};
+
+function getFriendlyName(rawName: string): string {
+  const lower = rawName.toLowerCase();
+  for (const [key, friendly] of Object.entries(PROCESS_FRIENDLY_NAMES)) {
+    if (lower.includes(key.toLowerCase())) return friendly;
+  }
+  // Capitalize first letter of each word
+  return rawName.replace(/\.exe$/i, '').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// ==========================================
+// AUDIO SESSION MANAGEMENT (Cross-Platform)
+// ==========================================
+async function getAudioSessions(): Promise<AudioSession[]> {
+  if (isWindows) {
+    return getWindowsAudioSessions();
+  } else {
+    return getLinuxAudioSessions();
+  }
+}
+
+async function getWindowsAudioSessions(): Promise<AudioSession[]> {
+  try {
+    // Use PowerShell to enumerate audio sessions via COM
+    const ps = `
+      Add-Type -TypeDefinition @"
+      using System;
+      using System.Runtime.InteropServices;
+      [Guid("BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D")]
+      [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+      interface IAudioSessionControl2 {
+        void GetState();
+        void GetDisplayName();
+        void SetDisplayName();
+        void GetIconPath();
+        void SetIconPath();
+        void GetGroupingParam();
+        void SetGroupingParam();
+        void RegisterAudioSessionNotification();
+        void UnregisterAudioSessionNotification();
+        uint GetSessionIdentifier([Out, MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
+      }
+"@
+      # Fallback: list running processes with audio activity via Get-Process
+      $procs = Get-Process | Where-Object { $_.MainWindowTitle -ne '' -or $_.Name -match 'java|spotify|chrome|firefox|discord|vlc|msedge' } | Select-Object Id, Name
+      $procs | ConvertTo-Json -Depth 1
+    `;
+    const result = execSync(`powershell -NoProfile -NonInteractive -Command "${ps.replace(/"/g, "'").replace(/\n/g, ' ')}"`, { timeout: 3000 }).toString();
+    let procs: any[] = [];
+    try { procs = JSON.parse(result); } catch { return []; }
+    if (!Array.isArray(procs)) procs = [procs];
+    return procs.slice(0, 12).map((p: any) => ({
+      id: String(p.Id || p.id || Math.random()),
+      name: getFriendlyName(String(p.Name || p.name || 'Unknown')),
+      volume: 1.0,
+      muted: false
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function getLinuxAudioSessions(): Promise<AudioSession[]> {
+  try {
+    // Try pactl -f json (PulseAudio 15+ / PipeWire)
+    const raw = execSync('pactl -f json list sink-inputs 2>/dev/null', { timeout: 3000 }).toString().trim();
+    if (!raw || raw === 'null') return [];
+    const inputs: any[] = JSON.parse(raw);
+    if (!Array.isArray(inputs)) return [];
+    return inputs.map((inp: any) => {
+      const appName = inp.properties?.['application.name']
+        || inp.properties?.['media.name']
+        || 'Bilinmeyen Uygulama';
+      const volObj = inp.volume?.['front-left'] || inp.volume?.['mono'];
+      const volPct = volObj?.value_percent ? parseInt(volObj.value_percent) / 100 : 1.0;
+      return {
+        id: String(inp.index),
+        name: getFriendlyName(appName),
+        volume: Math.min(1, Math.max(0, volPct)),
+        muted: inp.mute === true
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+function setAudioSessionVolume(appId: string, volume: number) {
+  if (isWindows) {
+    // Windows: PowerShell nircmd approach (best effort)
+    try {
+      execSync(`nircmd.exe setappvolume ${appId} ${volume.toFixed(2)}`, { timeout: 2000 });
+    } catch { /* silently ignore if nircmd not present */ }
+  } else {
+    // Linux: pactl
+    const pct = Math.round(volume * 100);
+    exec(`pactl set-sink-input-volume ${appId} ${pct}%`);
+  }
+}
+
+function setAudioSessionMute(appId: string, muted: boolean) {
+  if (isWindows) {
+    try {
+      execSync(`nircmd.exe mutesysvolume ${muted ? 1 : 0}`, { timeout: 2000 });
+    } catch { /* silently ignore */ }
+  } else {
+    exec(`pactl set-sink-input-mute ${appId} ${muted ? '1' : '0'}`);
+  }
+}
+
+// ==========================================
+// SYSTEM MEDIA CONTROL (Cross-Platform)
+// ==========================================
+function handleMediaCommand(action: 'play' | 'pause' | 'next' | 'prev') {
+  if (isWindows) {
+    // Windows: use PowerShell SendMessage to media keys
+    const keyMap: Record<string, number> = {
+      play: 0xB3,   // VK_MEDIA_PLAY_PAUSE
+      pause: 0xB3,
+      next: 0xB0,   // VK_MEDIA_NEXT_TRACK
+      prev: 0xB1    // VK_MEDIA_PREV_TRACK
+    };
+    const vk = keyMap[action] || 0xB3;
+    try {
+      execSync(`powershell -NoProfile -Command "[void][System.Windows.Forms.SendKeys]"`, { timeout: 1000 });
+    } catch {}
+    try {
+      // Use keybd_event approach via PowerShell
+      execSync(
+        `powershell -NoProfile -NonInteractive -Command "$wsh = New-Object -ComObject WScript.Shell; $wsh.SendKeys([char]${vk})"`,
+        { timeout: 2000 }
+      );
+    } catch { /* ignore */ }
+  } else {
+    // Linux: playerctl (MPRIS)
+    const cmdMap: Record<string, string> = {
+      play: 'playerctl play',
+      pause: 'playerctl pause',
+      next: 'playerctl next',
+      prev: 'playerctl previous'
+    };
+    exec(cmdMap[action] || 'playerctl play-pause');
+  }
+}
+
+// ==========================================
+// WEB DASHBOARD SERVER
+// ==========================================
+function getLocalIP(): string {
+  const interfaces = os.networkInterfaces();
+  for (const iface of Object.values(interfaces)) {
+    if (!iface) continue;
+    for (const addr of iface) {
+      if (addr.family === 'IPv4' && !addr.internal) {
+        return addr.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
+
+function getDashboardHTML(): string {
+  // Serve the static dashboard.html from the public directory
+  const htmlPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'public', 'dashboard.html')
+    : path.join(__dirname, '..', 'public', 'dashboard.html');
+  if (fs.existsSync(htmlPath)) {
+    return fs.readFileSync(htmlPath, 'utf8');
+  }
+  // Minimal fallback
+  return '<html><body><h1>Rase Launcher Dashboard</h1><p>dashboard.html not found</p></body></html>';
+}
+
+async function startWebDashboard(): Promise<void> {
+  if (webDashboardServer) return; // Already running
+
+  const expressApp = express();
+  const server = http.createServer(expressApp);
+  const wss = new WebSocketServer({ server });
+
+  // Serve the phone dashboard HTML
+  expressApp.get('/', (_req: any, res: any) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(getDashboardHTML());
+  });
+
+  wss.on('connection', (ws: any) => {
+    console.log('[WebDashboard] Phone connected');
+
+    // Send stats every second
+    const statsInterval = setInterval(async () => {
+      if (ws.readyState !== 1 /* OPEN */) return;
+      try {
+        const cpuLoad = await si.currentLoad();
+        const memInfo = await si.mem();
+        const playedMs = gameStartTime ? Date.now() - gameStartTime : 0;
+
+        const statsMsg = JSON.stringify({
+          type: 'stats',
+          data: {
+            ram: {
+              used: Math.round(memInfo.active / 1024 / 1024 / 1024 * 10) / 10,
+              total: Math.round(memInfo.total / 1024 / 1024 / 1024 * 10) / 10
+            },
+            cpu: Math.round(cpuLoad.currentLoad),
+            fps: currentFPS,
+            playTimeMs: playedMs
+          }
+        });
+        ws.send(statsMsg);
+
+        // Also send audio sessions every 2 ticks (every 2s)
+        const audioSessions = await getAudioSessions();
+        ws.send(JSON.stringify({ type: 'audio', data: audioSessions }));
+      } catch { /* ignore */ }
+    }, 1000);
+
+    ws.on('message', (raw: Buffer) => {
+      try {
+        const msg = JSON.parse(raw.toString());
+        if (msg.type === 'media') handleMediaCommand(msg.action);
+        if (msg.type === 'volume') setAudioSessionVolume(String(msg.appId), Number(msg.volume));
+        if (msg.type === 'mute') setAudioSessionMute(String(msg.appId), Boolean(msg.muted));
+      } catch { /* ignore malformed */ }
+    });
+
+    ws.on('close', () => {
+      clearInterval(statsInterval);
+      console.log('[WebDashboard] Phone disconnected');
+    });
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    server.listen(7823, '0.0.0.0', () => {
+      console.log('[WebDashboard] Server started on port 7823');
+      resolve();
+    });
+    server.on('error', reject);
+  });
+
+  webDashboardServer = server;
+
+  // Generate QR code and send to launcher window
+  const localIP = getLocalIP();
+  const dashboardURL = `http://${localIP}:7823`;
+  try {
+    const qrDataURL = await QRCode.toDataURL(dashboardURL, {
+      color: { dark: '#e8553a', light: '#07080f' },
+      width: 256,
+      margin: 2
+    });
+    mainWindow?.webContents.send('show-qr-popup', { qrDataURL, ipAddress: dashboardURL });
+  } catch (e) {
+    console.error('[WebDashboard] QR generation failed:', e);
+  }
+}
+
+function stopWebDashboard() {
+  if (webDashboardServer) {
+    webDashboardServer.close();
+    webDashboardServer = null;
+    console.log('[WebDashboard] Server stopped');
+  }
+}
+
+// ==========================================
+// BORDERLESS FULLSCREEN
+// ==========================================
+async function ensureBorderlessMode(instanceDir: string, _version: string, _loaderType: string): Promise<void> {
+  // Step 1: Try options.txt manipulation
+  const optionsPath = path.join(instanceDir, 'options.txt');
+  try {
+    let content = '';
+    if (fs.existsSync(optionsPath)) {
+      content = fs.readFileSync(optionsPath, 'utf8');
+      // Replace fullscreen:true with fullscreen:false
+      if (content.includes('fullscreen:true')) {
+        content = content.replace(/^fullscreen:true$/m, 'fullscreen:false');
+        fs.writeFileSync(optionsPath, content, 'utf8');
+        mainWindow?.webContents.send('launch-log', '[Rase Launcher] Borderless: options.txt updated (fullscreen:false)');
+        return;
+      } else if (content.includes('fullscreen:false')) {
+        mainWindow?.webContents.send('launch-log', '[Rase Launcher] Borderless: Already set to windowed mode in options.txt');
+        return;
+      } else {
+        // Add fullscreen:false
+        content += '\nfullscreen:false';
+        fs.writeFileSync(optionsPath, content, 'utf8');
+        mainWindow?.webContents.send('launch-log', '[Rase Launcher] Borderless: Added fullscreen:false to options.txt');
+        return;
+      }
+    } else {
+      // Create a minimal options.txt
+      fs.mkdirSync(path.dirname(optionsPath), { recursive: true });
+      fs.writeFileSync(optionsPath, 'fullscreen:false\n', 'utf8');
+      mainWindow?.webContents.send('launch-log', '[Rase Launcher] Borderless: Created options.txt with fullscreen:false');
+      return;
+    }
+  } catch (e: any) {
+    mainWindow?.webContents.send('launch-log', `[Rase Launcher] Borderless options.txt failed: ${e.message}. Using JVM arg fallback.`);
+  }
+
+  // Step 2: JVM arg fallback — will be injected into customArgs by caller
+  mainWindow?.webContents.send('launch-log', '[Rase Launcher] Borderless: JVM arg fallback active');
+}
+
+async function ensureBorderlessFabricMod(instanceDir: string, mcVersion: string): Promise<void> {
+  const modsDir = path.join(instanceDir, 'mods');
+  if (!fs.existsSync(modsDir)) {
+    fs.mkdirSync(modsDir, { recursive: true });
+  }
+
+  // Check if borderless mod is already installed
+  const existingMods = fs.readdirSync(modsDir);
+  if (existingMods.some(f => f.toLowerCase().includes('borderless'))) {
+    mainWindow?.webContents.send('launch-log', '[Rase Launcher] Borderless Fabric mod already installed');
+    return;
+  }
+
+  try {
+    mainWindow?.webContents.send('launch-log', `[Rase Launcher] Fetching Borderless Fullscreen mod for MC ${mcVersion}...`);
+    // Modrinth API: get versions for 'borderless-fullscreen' project, filtered by fabric + mc version
+    const apiUrl = `https://api.modrinth.com/v2/project/borderless-fullscreen/version?loaders=["fabric"]&game_versions=["${mcVersion}"]`;
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`Modrinth API error: HTTP ${res.status}`);
+    const versions: any[] = await res.json();
+    if (!versions || versions.length === 0) {
+      // Try without version filter
+      const res2 = await fetch('https://api.modrinth.com/v2/project/borderless-fullscreen/version?loaders=["fabric"]');
+      const vers2: any[] = await res2.json();
+      if (!vers2 || vers2.length === 0) throw new Error('No compatible Fabric version found');
+      versions.push(...vers2.slice(0, 1));
+    }
+
+    const latestVer = versions[0];
+    const file = latestVer.files?.find((f: any) => f.primary) || latestVer.files?.[0];
+    if (!file?.url) throw new Error('No download URL found');
+
+    mainWindow?.webContents.send('launch-log', `[Rase Launcher] Downloading ${file.filename}...`);
+    const fileRes = await fetch(file.url);
+    if (!fileRes.ok) throw new Error(`Download failed: HTTP ${fileRes.status}`);
+    const buf = Buffer.from(await fileRes.arrayBuffer());
+    fs.writeFileSync(path.join(modsDir, file.filename), buf);
+    mainWindow?.webContents.send('launch-log', `[Rase Launcher] Borderless Fullscreen mod installed: ${file.filename}`);
+  } catch (e: any) {
+    mainWindow?.webContents.send('launch-log', `[Rase Launcher] [WARN] Could not install Borderless mod: ${e.message}. Falling back to options.txt.`);
+    // Fall back to options.txt
+    await ensureBorderlessMode(instanceDir, mcVersion, 'fabric');
+  }
 }
 
 // Window creation
@@ -801,6 +1197,13 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
   launcher.on('data', (e: string) => {
     mainWindow?.webContents.send('launch-log', e);
 
+    // ---- FPS Parsing for Web Dashboard ----
+    // Minecraft logs FPS in title bar format: "X fps"
+    const fpsMatch = e.match(/(\d+)\s*fps/i);
+    if (fpsMatch) {
+      currentFPS = parseInt(fpsMatch[1], 10);
+    }
+
     // ---- Discord RPC: Real-time log parsing ----
     // Singleplayer: Minecraft logs when an integrated server starts
     if (/Starting integrated connection|Starting internal server/i.test(e)) {
@@ -977,6 +1380,17 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
 
   const instanceDir = getInstanceDirectory(version, type);
 
+  // ---- Borderless Fullscreen enforcement ----
+  if (settings.borderlessFullscreen !== false) {
+    if (type === 'fabric') {
+      // For Fabric: install the dedicated Borderless Fullscreen mod from Modrinth
+      await ensureBorderlessFabricMod(instanceDir, version);
+    } else {
+      // For Vanilla & Forge: options.txt manipulation + JVM arg fallback
+      await ensureBorderlessMode(instanceDir, version, type);
+    }
+  }
+
   const launchOptions = {
     clientPackage: undefined,
     authorization: auth,
@@ -1021,6 +1435,8 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
 
   // Track play session start
   const sessionStart = Date.now();
+  gameStartTime = sessionStart;  // Web Dashboard timer reference
+  currentFPS = 0;
   const playedVersionLabel = type === 'fabric'
     ? `${version} (Fabric)`
     : type === 'forge'
@@ -1040,9 +1456,20 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
       mainWindow?.webContents.send('launch-status', { state: 'closed' });
       // Discord RPC: revert to launcher browsing state when game closes
       updateDiscordPresence('Ana Sayfada Geziniyor');
+      // Stop web dashboard server when game closes
+      stopWebDashboard();
+      gameStartTime = null;
+      currentFPS = 0;
     });
 
     launcher.launch(launchOptions);
+
+    // ---- Start Web Dashboard if enabled ----
+    if (settings.webDashboardEnabled !== false) {
+      startWebDashboard().catch((e) => {
+        console.error('[WebDashboard] Failed to start:', e.message);
+      });
+    }
 
     // Discord RPC: show version label once game has launched
     updateDiscordPresence(playedVersionLabel, undefined, true);
@@ -1359,3 +1786,16 @@ ipcMain.handle('delete-screenshot', async (_event, { filePath }) => {
   }
 });
 
+// ==========================================
+// MEDIA CONTROL IPC (from Renderer / QrPopup)
+// ==========================================
+ipcMain.handle('media-control', (_event, action: 'play' | 'pause' | 'next' | 'prev') => {
+  handleMediaCommand(action);
+  return { success: true };
+});
+
+// Cleanup on app quit
+app.on('before-quit', () => {
+  stopWebDashboard();
+  globalShortcut.unregisterAll();
+});
