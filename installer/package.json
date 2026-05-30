@@ -1,7 +1,7 @@
 {
   "name": "rase-installer",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.2-hotfix",
   "description": "Sleek glassmorphism installation wizard for Rase Launcher.",
   "main": "dist-electron/main.cjs",
   "type": "module",
