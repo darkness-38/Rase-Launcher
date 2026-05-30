@@ -42,6 +42,8 @@ declare global {
       showHistorical?: boolean;
       showOnlyInstalled?: boolean;
       showModded?: boolean;
+      profiles?: any[];
+      activeProfileId?: string | null;
     }>;
     saveSettings: (settings: {
       ram: number;
@@ -56,6 +58,8 @@ declare global {
       showHistorical?: boolean;
       showOnlyInstalled?: boolean;
       showModded?: boolean;
+      profiles?: any[];
+      activeProfileId?: string | null;
     }) => Promise<any>;
     getSystemRam: () => Promise<number>;
     getStats: () => Promise<{

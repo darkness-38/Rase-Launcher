@@ -95,6 +95,8 @@ interface Settings {
   showHistorical?: boolean;
   showOnlyInstalled?: boolean;
   showModded?: boolean;
+  profiles?: any[];
+  activeProfileId?: string | null;
 }
 
 let settings: Settings = {
@@ -457,6 +459,16 @@ async function ensureJavaRuntime(mcVersion: string): Promise<string> {
 // Helper to resolve and create isolated version instances game directory
 function getInstanceDirectory(version?: string, loaderType?: string): string {
   const root = settings.gameDir || defaultGameDir;
+
+  // Route to the active isolated custom profile's directory if one is set active
+  if (settings.activeProfileId) {
+    const profileDir = path.join(root, 'profiles', settings.activeProfileId);
+    if (!fs.existsSync(profileDir)) {
+      fs.mkdirSync(profileDir, { recursive: true });
+    }
+    return profileDir;
+  }
+
   if (!version || !loaderType) return root;
   const instanceDir = path.join(root, 'instances', `${loaderType}-${version}`);
   if (!fs.existsSync(instanceDir)) {

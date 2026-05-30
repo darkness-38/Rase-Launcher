@@ -4,6 +4,7 @@ import { TitleBar } from './components/TitleBar';
 import { VersionDropdown } from './components/VersionDropdown';
 import { ModsTab } from './components/ModsTab';
 import { SettingsTab } from './components/SettingsTab';
+import { ProfilesTab } from './components/ProfilesTab';
 
 // Helper: parse installed version string to version and loader
 const parseInstalledVersion = (ver: string): { version: string; loader: 'vanilla' | 'fabric' | 'forge' } => {
@@ -26,7 +27,7 @@ export default function App() {
   // Navigation & User State
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'play' | 'mods' | 'settings'>('play');
+  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'settings'>('play');
   const [savedUsernames, setSavedUsernames] = useState<string[]>([]);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [newAccountInput, setNewAccountInput] = useState('');
@@ -47,6 +48,8 @@ export default function App() {
   const [appLoading, setAppLoading] = useState(true);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [latestVersionInfo, setLatestVersionInfo] = useState<{ version: string; url: string; body?: string } | null>(null);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 
   // Version Visibility States
   const [showSnapshots, setShowSnapshots] = useState(false);
@@ -85,9 +88,16 @@ export default function App() {
       } else if (settings.lastUsername) {
         setSavedUsernames([settings.lastUsername]);
       }
+
+      const profs = (settings as any).profiles || [];
+      const actId = (settings as any).activeProfileId || null;
+      setProfiles(profs);
+      setActiveProfileId(actId);
       
-      // Load last selected loader type
-      if (settings.lastLoader) {
+      const activeProf = profs.find((p: any) => p.id === actId);
+      if (activeProf) {
+        setSelectedLoader(activeProf.loader);
+      } else if (settings.lastLoader) {
         setSelectedLoader(settings.lastLoader as any);
       }
       
@@ -124,7 +134,9 @@ export default function App() {
       setAvailableVersions(available);
       const availableIds = available.map(v => v.id);
       if (available.length > 0) {
-        if (settings.lastVersion && availableIds.includes(settings.lastVersion)) {
+        if (activeProf && availableIds.includes(activeProf.version)) {
+          setSelectedVersion(activeProf.version);
+        } else if (settings.lastVersion && availableIds.includes(settings.lastVersion)) {
           setSelectedVersion(settings.lastVersion);
         } else if (!availableIds.includes(selectedVersion)) {
           setSelectedVersion(availableIds[0]);
@@ -214,14 +226,50 @@ export default function App() {
     }
   };
 
+  const handleProfilesChanged = async (newProfiles: any[], activeId: string | null) => {
+    setProfiles(newProfiles);
+    setActiveProfileId(activeId);
+    
+    if (activeId) {
+      const activeProf = newProfiles.find(p => p.id === activeId);
+      if (activeProf) {
+        setSelectedVersion(activeProf.version);
+        setSelectedLoader(activeProf.loader);
+      }
+    }
+    
+    if (window.electronAPI) {
+      try {
+        const current = await window.electronAPI.getSettings();
+        await window.electronAPI.saveSettings({
+          ...current,
+          profiles: newProfiles,
+          activeProfileId: activeId
+        });
+      } catch (e) {
+        console.error('Failed to save profiles to settings', e);
+      }
+    }
+  };
+
   const handleSetSelectedVersion = (v: string) => {
     setSelectedVersion(v);
-    saveActiveVersion(v, selectedLoader);
+    if (activeProfileId) {
+      const updatedProfiles = profiles.map(p => p.id === activeProfileId ? { ...p, version: v } : p);
+      handleProfilesChanged(updatedProfiles, activeProfileId);
+    } else {
+      saveActiveVersion(v, selectedLoader);
+    }
   };
 
   const handleSetSelectedLoader = (l: 'vanilla' | 'fabric' | 'forge') => {
     setSelectedLoader(l);
-    saveActiveVersion(selectedVersion, l);
+    if (activeProfileId) {
+      const updatedProfiles = profiles.map(p => p.id === activeProfileId ? { ...p, loader: l } : p);
+      handleProfilesChanged(updatedProfiles, activeProfileId);
+    } else {
+      saveActiveVersion(selectedVersion, l);
+    }
   };
 
   // Filter available versions based on visibility settings
@@ -679,6 +727,8 @@ export default function App() {
   };
 
   // Helper: parse installed version string to version and loader
+  const activeProfile = profiles.find(p => p.id === activeProfileId);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', userSelect: 'none', backgroundColor: '#f0ece3' }}>
       
@@ -783,6 +833,7 @@ export default function App() {
 
                     {[
                       { id: 'play', name: 'Ana Sayfa', iconClass: 'ti ti-home' },
+                      { id: 'profiles', name: 'Profiller', iconClass: 'ti ti-folder' },
                       { id: 'mods', name: 'Paketler & Modlar', iconClass: 'ti ti-box' },
                     ].map((tab) => {
                       const isActive = activeTab === tab.id;
@@ -857,6 +908,7 @@ export default function App() {
                 <div className="topbar">
                   <div className="page-title">
                     {activeTab === 'play' && 'Ana Sayfa'}
+                    {activeTab === 'profiles' && 'Özel Profiller'}
                     {activeTab === 'mods' && 'Paketler & Modlar'}
                     {activeTab === 'settings' && 'Ayarlar'}
                   </div>
@@ -888,11 +940,25 @@ export default function App() {
                             
                             <div className="play-info">
                               <div className="play-label">Seçili Sürüm</div>
-                              <div className="play-version">
-                                Minecraft {selectedVersion}
-                                {selectedLoader === 'fabric' && <span className="fabric-tag">Fabric</span>}
-                                {selectedLoader === 'forge' && <span className="fabric-tag" style={{ background: '#3d2b1f', color: '#e88d4a' }}>Forge</span>}
-                                {selectedLoader === 'vanilla' && <span className="fabric-tag" style={{ background: '#213523', color: '#5aa85c' }}>Vanilla</span>}
+                              <div className="play-version" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                {activeProfile ? (
+                                  <>
+                                    <span 
+                                      className="fabric-tag" 
+                                      style={{ background: 'var(--color-terracotta)', color: '#ffffff', margin: 0, display: 'flex', alignItems: 'center', gap: '4px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                      title={`Profil: ${activeProfile.name}`}
+                                    >
+                                      <i className="ti ti-folder" />
+                                      {activeProfile.name}
+                                    </span>
+                                    <span style={{ fontSize: '12px', color: '#8a857e', fontWeight: '500' }}>({selectedVersion})</span>
+                                  </>
+                                ) : (
+                                  <>Minecraft {selectedVersion}</>
+                                )}
+                                {selectedLoader === 'fabric' && <span className="fabric-tag" style={{ margin: 0 }}>Fabric</span>}
+                                {selectedLoader === 'forge' && <span className="fabric-tag" style={{ background: '#3d2b1f', color: '#e88d4a', margin: 0 }}>Forge</span>}
+                                {selectedLoader === 'vanilla' && <span className="fabric-tag" style={{ background: '#213523', color: '#5aa85c', margin: 0 }}>Vanilla</span>}
                               </div>
                             </div>
 
@@ -1009,6 +1075,25 @@ export default function App() {
                         )}
 
 
+                      </motion.div>
+                    )}
+
+                    {/* TAB: PROFILES VIEW */}
+                    {activeTab === 'profiles' && (
+                      <motion.div
+                        key="profiles-view"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.18 }}
+                        style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+                      >
+                        <ProfilesTab
+                          profiles={profiles}
+                          activeProfileId={activeProfileId}
+                          availableVersions={availableVersions}
+                          onProfilesChanged={handleProfilesChanged}
+                        />
                       </motion.div>
                     )}
 
