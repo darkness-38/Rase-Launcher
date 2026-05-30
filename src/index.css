@@ -1090,11 +1090,13 @@ body {
 }
 
 .mods-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .mods-col {
@@ -1104,7 +1106,8 @@ body {
   border: 1px solid var(--border-sand);
   border-radius: 8px;
   padding: 16px;
-  min-height: 0;
+  height: 220px;
+  min-height: 220px;
 }
 
 .mods-col-header {
