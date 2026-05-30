@@ -1051,3 +1051,147 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
     throw e;
   }
 });
+
+// Download and Install Modrinth Modpack (.mrpack)
+ipcMain.handle('download-modpack', async (_event, { profileId, downloadUrl }) => {
+  if (!mainWindow) return { success: false, error: 'Main window not available' };
+  
+  try {
+    mainWindow.webContents.send('install-progress', { state: 'downloading', percent: 5, message: 'Mod paketi arşivi indiriliyor...' });
+    
+    // Construct the destination profiles directory
+    const root = settings.gameDir || defaultGameDir;
+    const profileDir = path.join(root, 'profiles', profileId);
+    if (!fs.existsSync(profileDir)) {
+      fs.mkdirSync(profileDir, { recursive: true });
+    }
+    
+    // Download the .mrpack file as a buffer
+    const mrpackRes = await fetch(downloadUrl);
+    if (!mrpackRes.ok) {
+      throw new Error(`Modpack dosyası indirilemedi (HTTP ${mrpackRes.status})`);
+    }
+    const arrayBuffer = await mrpackRes.arrayBuffer();
+    const mrpackBuffer = Buffer.from(arrayBuffer);
+    
+    mainWindow.webContents.send('install-progress', { state: 'downloading', percent: 15, message: 'Mod paketi arşivi açılıyor...' });
+    
+    // Load ZIP
+    const zip = new AdmZip(mrpackBuffer);
+    const indexEntry = zip.getEntry('modrinth.index.json');
+    if (!indexEntry) {
+      throw new Error('Geçersiz Modrinth paketi: modrinth.index.json bulunamadı.');
+    }
+    
+    const indexJson = JSON.parse(indexEntry.getData().toString('utf8'));
+    
+    // 1. Resolve loader and Minecraft versions
+    const deps = indexJson.dependencies || {};
+    const minecraftVersion = deps.minecraft || '1.20.1';
+    let loaderType: 'fabric' | 'forge' | 'vanilla' = 'vanilla';
+    if (deps['fabric-loader']) {
+      loaderType = 'fabric';
+    } else if (deps['forge']) {
+      loaderType = 'forge';
+    }
+    
+    mainWindow.webContents.send('install-progress', { state: 'downloading', percent: 20, message: 'Özel ayarlar ve dosyalar çıkarılıyor...' });
+    
+    // 2. Extract overrides & client-overrides
+    const entries = zip.getEntries();
+    for (const entry of entries) {
+      if (entry.entryName.startsWith('overrides/')) {
+        const relativePath = entry.entryName.substring('overrides/'.length);
+        if (relativePath) {
+          const destPath = path.join(profileDir, relativePath);
+          if (entry.isDirectory) {
+            fs.mkdirSync(destPath, { recursive: true });
+          } else {
+            fs.mkdirSync(path.dirname(destPath), { recursive: true });
+            fs.writeFileSync(destPath, entry.getData());
+          }
+        }
+      } else if (entry.entryName.startsWith('client-overrides/')) {
+        const relativePath = entry.entryName.substring('client-overrides/'.length);
+        if (relativePath) {
+          const destPath = path.join(profileDir, relativePath);
+          if (entry.isDirectory) {
+            fs.mkdirSync(destPath, { recursive: true });
+          } else {
+            fs.mkdirSync(path.dirname(destPath), { recursive: true });
+            fs.writeFileSync(destPath, entry.getData());
+          }
+        }
+      }
+    }
+    
+    // 3. Download mod files
+    const files = indexJson.files || [];
+    const totalFiles = files.length;
+    let completedFiles = 0;
+    
+    if (totalFiles > 0) {
+      // Chunked downloader (5 concurrent streams)
+      const limit = 5;
+      for (let i = 0; i < files.length; i += limit) {
+        const chunk = files.slice(i, i + limit);
+        await Promise.all(chunk.map(async (file: any) => {
+          const fileDest = path.join(profileDir, file.path);
+          fs.mkdirSync(path.dirname(fileDest), { recursive: true });
+          
+          const fileUrl = file.downloads[0];
+          if (!fileUrl) return;
+          
+          let success = false;
+          let retries = 3;
+          while (!success && retries > 0) {
+            try {
+              const fileRes = await fetch(fileUrl);
+              if (!fileRes.ok) throw new Error(`HTTP ${fileRes.status}`);
+              const fBuffer = await fileRes.arrayBuffer();
+              fs.writeFileSync(fileDest, Buffer.from(fBuffer));
+              success = true;
+            } catch (err) {
+              retries--;
+              if (retries === 0) throw new Error(`Mod dosyası indirilemedi: ${file.path}. Detay: ${(err as any).message}`);
+              await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s before retry
+            }
+          }
+          
+          completedFiles++;
+          const percent = Math.round(20 + (completedFiles / totalFiles) * 75); // 20% to 95%
+          mainWindow?.webContents.send('install-progress', {
+            state: 'downloading',
+            percent,
+            message: `Modlar indiriliyor: ${completedFiles}/${totalFiles} dosya...`
+          });
+        }));
+      }
+    }
+    
+    mainWindow?.webContents.send('install-progress', {
+      state: 'downloading',
+      percent: 98,
+      message: 'Mod yükleyici altyapısı hazırlanıyor...'
+    });
+    
+    return {
+      success: true,
+      minecraftVersion,
+      loaderType
+    };
+  } catch (err: any) {
+    console.error('Modpack download failed:', err);
+    mainWindow?.webContents.send('install-progress', {
+      state: 'error',
+      message: `Mod paketi kurulum hatası: ${err.message}`
+    });
+    return {
+      success: false,
+      minecraftVersion: '1.20.1',
+      loaderType: 'vanilla',
+      error: err.message
+    };
+  }
+});
+

@@ -6,6 +6,7 @@ import { ModsTab } from './components/ModsTab';
 import { SettingsTab } from './components/SettingsTab';
 import { ProfilesTab } from './components/ProfilesTab';
 import { ThemesTab } from './components/ThemesTab';
+import { ExploreTab } from './components/ExploreTab';
 
 // Helper: parse installed version string to version and loader
 const parseInstalledVersion = (ver: string): { version: string; loader: 'vanilla' | 'fabric' | 'forge' } => {
@@ -28,7 +29,7 @@ export default function App() {
   // Navigation & User State
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'themes' | 'settings'>('play');
+  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'themes' | 'settings' | 'explore'>('play');
   const [savedUsernames, setSavedUsernames] = useState<string[]>([]);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [newAccountInput, setNewAccountInput] = useState('');
@@ -258,6 +259,71 @@ export default function App() {
       } catch (e) {
         console.error('Failed to save profiles to settings', e);
       }
+    }
+  };
+
+  const handleInstallModpack = async (modpackName: string, downloadUrl: string) => {
+    if (!window.electronAPI) {
+      alert('Bu özellik yalnızca masaüstü uygulamasında kullanılabilir!');
+      return;
+    }
+    
+    // 1. Create a temporary profile state
+    const newProfileId = Date.now().toString();
+    const newProfile: { id: string; name: string; version: string; loader: 'vanilla' | 'fabric' | 'forge'; created: number } = {
+      id: newProfileId,
+      name: modpackName,
+      version: '1.20.1', // Default until parsed from mrpack
+      loader: 'fabric',  // Default until parsed from mrpack
+      created: Date.now()
+    };
+    
+    setLaunchState('installing');
+    setProgress(5);
+    setStatusMessage('Mod paketi hazırlanıyor...');
+    setActiveTab('play'); // Switch to main tab so user can see progress immediately
+    
+    try {
+      // 2. Download & Extract Modpack
+      const installResult = await window.electronAPI.downloadModpack(newProfileId, downloadUrl);
+      
+      if (!installResult.success) {
+        throw new Error(installResult.error || 'Modpack arşivi indirilemedi.');
+      }
+      
+      const { minecraftVersion, loaderType } = installResult;
+      
+      // Update new profile's parsed loader & version
+      newProfile.version = minecraftVersion;
+      newProfile.loader = loaderType;
+      
+      // 3. Make sure loader is fully installed
+      let loaderRes = { success: true };
+      if (loaderType !== 'vanilla') {
+        setStatusMessage('Mod yükleyici altyapısı kuruluyor...');
+        loaderRes = await window.electronAPI.installLoader(minecraftVersion, loaderType);
+      }
+      if (!loaderRes.success) {
+        throw new Error('Mod yükleyici altyapısı (Fabric/Forge) kurulamadı.');
+      }
+      
+      // 4. Save and activate the new profile
+      const updatedProfiles = [...profiles, newProfile];
+      await handleProfilesChanged(updatedProfiles, newProfileId);
+      
+      // Finalize progress
+      setProgress(100);
+      setStatusMessage('Mod paketi kurulumu başarıyla tamamlandı!');
+      
+      setTimeout(() => {
+        setLaunchState('idle');
+        setProgress(0);
+      }, 3000);
+    } catch (e: any) {
+      console.error('Failed to install modpack:', e);
+      setLaunchState('error');
+      setErrorDetails(e.message || 'Mod paketi kurulurken bilinmeyen bir hata oluştu.');
+      setStatusMessage('Kurulum başarısız oldu.');
     }
   };
 
@@ -877,6 +943,7 @@ export default function App() {
                     {[
                       { id: 'play', name: 'Ana Sayfa', iconClass: 'ti ti-home' },
                       { id: 'profiles', name: 'Profiller', iconClass: 'ti ti-folder' },
+                      { id: 'explore', name: 'Keşfet & Modpack', iconClass: 'ti ti-planet' },
                       { id: 'themes', name: 'Temalar', iconClass: 'ti ti-palette' },
                       { id: 'mods', name: 'Paketler & Modlar', iconClass: 'ti ti-box' },
                     ].map((tab) => {
@@ -953,6 +1020,7 @@ export default function App() {
                   <div className="page-title">
                     {activeTab === 'play' && 'Ana Sayfa'}
                     {activeTab === 'profiles' && 'Özel Profiller'}
+                    {activeTab === 'explore' && 'Modpack Mağazası'}
                     {activeTab === 'themes' && 'Arayüz Temaları'}
                     {activeTab === 'mods' && 'Paketler & Modlar'}
                     {activeTab === 'settings' && 'Ayarlar'}
@@ -1138,6 +1206,23 @@ export default function App() {
                           activeProfileId={activeProfileId}
                           availableVersions={availableVersions}
                           onProfilesChanged={handleProfilesChanged}
+                        />
+                      </motion.div>
+                    )}
+
+                    {/* TAB: EXPLORE VIEW */}
+                    {activeTab === 'explore' && (
+                      <motion.div
+                        key="explore-view"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.18 }}
+                        style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+                      >
+                        <ExploreTab
+                          onInstallModpack={handleInstallModpack}
+                          isInstalling={launchState !== 'idle'}
                         />
                       </motion.div>
                     )}

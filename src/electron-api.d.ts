@@ -47,6 +47,7 @@ declare global {
       themeColor?: 'default' | 'forest' | 'ocean' | 'obsidian';
       themeLayout?: 'classic' | 'dashboard';
     }>;
+    downloadModpack: (profileId: string, downloadUrl: string) => Promise<{ success: boolean; minecraftVersion: string; loaderType: 'fabric' | 'forge' | 'vanilla'; error?: string }>;
     saveSettings: (settings: {
       ram: number;
       javaPath: string;
