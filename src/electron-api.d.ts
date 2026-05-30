@@ -75,10 +75,10 @@ declare global {
     }>;
 
     // File managers
-    getModsAndPacks: (version?: string, loaderType?: string) => Promise<{ mods: string[]; packs: string[]; shaders: string[] }>;
-    deleteModOrPack: (fileName: string, type: 'mods' | 'resourcepacks' | 'shaderpacks', version?: string, loaderType?: string) => Promise<{ success: boolean; error?: string }>;
-    openFolder: (type: 'mods' | 'resourcepacks' | 'shaderpacks' | 'root', version?: string, loaderType?: string) => Promise<{ success: boolean }>;
-    installModOrPack: (filePath: string, version?: string, loaderType?: string) => Promise<{ success: boolean; fileName: string; type: 'mods' | 'resourcepacks' | 'shaderpacks' }>;
+    getModsAndPacks: (version?: string, loaderType?: string, activeProfileId?: string | null) => Promise<{ mods: string[]; packs: string[]; shaders: string[] }>;
+    deleteModOrPack: (fileName: string, type: 'mods' | 'resourcepacks' | 'shaderpacks', version?: string, loaderType?: string, activeProfileId?: string | null) => Promise<{ success: boolean; error?: string }>;
+    openFolder: (type: 'mods' | 'resourcepacks' | 'shaderpacks' | 'root', version?: string, loaderType?: string, activeProfileId?: string | null) => Promise<{ success: boolean }>;
+    installModOrPack: (filePath: string, version?: string, loaderType?: string, activeProfileId?: string | null) => Promise<{ success: boolean; fileName: string; type: 'mods' | 'resourcepacks' | 'shaderpacks' }>;
     selectModsOrPacks: () => Promise<string[]>;
 
     // Launch/Install Event Listeners

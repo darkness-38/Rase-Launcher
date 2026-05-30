@@ -459,12 +459,14 @@ async function ensureJavaRuntime(mcVersion: string): Promise<string> {
 }
 
 // Helper to resolve and create isolated version instances game directory
-function getInstanceDirectory(version?: string, loaderType?: string): string {
+function getInstanceDirectory(version?: string, loaderType?: string, activeProfileId?: string | null): string {
   const root = settings.gameDir || defaultGameDir;
 
+  const resolvedProfileId = activeProfileId !== undefined ? activeProfileId : settings.activeProfileId;
+
   // Route to the active isolated custom profile's directory if one is set active
-  if (settings.activeProfileId) {
-    const profileDir = path.join(root, 'profiles', settings.activeProfileId);
+  if (resolvedProfileId) {
+    const profileDir = path.join(root, 'profiles', resolvedProfileId);
     if (!fs.existsSync(profileDir)) {
       fs.mkdirSync(profileDir, { recursive: true });
     }
@@ -480,8 +482,8 @@ function getInstanceDirectory(version?: string, loaderType?: string): string {
 }
 
 // Open Game/Mods Folders in System File Explorer
-ipcMain.handle('open-folder', (_event, { type, version, loaderType }) => {
-  const instanceDir = getInstanceDirectory(version, loaderType);
+ipcMain.handle('open-folder', (_event, { type, version, loaderType, activeProfileId }) => {
+  const instanceDir = getInstanceDirectory(version, loaderType, activeProfileId);
   let targetPath = instanceDir;
   if (type === 'mods') targetPath = path.join(instanceDir, 'mods');
   else if (type === 'resourcepacks') targetPath = path.join(instanceDir, 'resourcepacks');
@@ -496,8 +498,8 @@ ipcMain.handle('open-folder', (_event, { type, version, loaderType }) => {
 });
 
 // Read Installed Mods and Packs
-ipcMain.handle('get-mods-and-packs', (_event, { version, loaderType }) => {
-  const instanceDir = getInstanceDirectory(version, loaderType);
+ipcMain.handle('get-mods-and-packs', (_event, { version, loaderType, activeProfileId }) => {
+  const instanceDir = getInstanceDirectory(version, loaderType, activeProfileId);
   const modsDir = path.join(instanceDir, 'mods');
   const packsDir = path.join(instanceDir, 'resourcepacks');
   const shadersDir = path.join(instanceDir, 'shaderpacks');
@@ -526,8 +528,8 @@ ipcMain.handle('get-mods-and-packs', (_event, { version, loaderType }) => {
 });
 
 // Delete Installed Mod or Pack
-ipcMain.handle('delete-mod-or-pack', (_event, { fileName, type, version, loaderType }) => {
-  const instanceDir = getInstanceDirectory(version, loaderType);
+ipcMain.handle('delete-mod-or-pack', (_event, { fileName, type, version, loaderType, activeProfileId }) => {
+  const instanceDir = getInstanceDirectory(version, loaderType, activeProfileId);
   const filePath = path.join(instanceDir, type, fileName);
 
   if (fs.existsSync(filePath)) {
@@ -538,8 +540,8 @@ ipcMain.handle('delete-mod-or-pack', (_event, { fileName, type, version, loaderT
 });
 
 // Install Dropped Jar or Zip File
-ipcMain.handle('install-mod-or-pack', (_event, { filePath, version, loaderType }) => {
-  const instanceDir = getInstanceDirectory(version, loaderType);
+ipcMain.handle('install-mod-or-pack', (_event, { filePath, version, loaderType, activeProfileId }) => {
+  const instanceDir = getInstanceDirectory(version, loaderType, activeProfileId);
   const extension = path.extname(filePath).toLowerCase();
   let type: 'mods' | 'resourcepacks' | 'shaderpacks' | null = null;
 

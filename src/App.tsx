@@ -1284,7 +1284,11 @@ export default function App() {
                         transition={{ duration: 0.18 }}
                         style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
                       >
-                        <ModsTab selectedVersion={selectedVersion} selectedLoader={selectedLoader} />
+                        <ModsTab
+                          selectedVersion={selectedVersion}
+                          selectedLoader={selectedLoader}
+                          activeProfileId={activeProfileId}
+                        />
                       </motion.div>
                     )}
 

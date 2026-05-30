@@ -30,14 +30,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getStats: () => ipcRenderer.invoke('get-stats'),
 
   // Mod & Resource Pack Management
-  getModsAndPacks: (version?: string, loaderType?: string) =>
-    ipcRenderer.invoke('get-mods-and-packs', { version, loaderType }),
-  deleteModOrPack: (fileName: string, type: 'mods' | 'resourcepacks' | 'shaderpacks', version?: string, loaderType?: string) =>
-    ipcRenderer.invoke('delete-mod-or-pack', { fileName, type, version, loaderType }),
-  openFolder: (type: 'mods' | 'resourcepacks' | 'shaderpacks' | 'root', version?: string, loaderType?: string) =>
-    ipcRenderer.invoke('open-folder', { type, version, loaderType }),
-  installModOrPack: (filePath: string, version?: string, loaderType?: string) =>
-    ipcRenderer.invoke('install-mod-or-pack', { filePath, version, loaderType }),
+  getModsAndPacks: (version?: string, loaderType?: string, activeProfileId?: string | null) =>
+    ipcRenderer.invoke('get-mods-and-packs', { version, loaderType, activeProfileId }),
+  deleteModOrPack: (fileName: string, type: 'mods' | 'resourcepacks' | 'shaderpacks', version?: string, loaderType?: string, activeProfileId?: string | null) =>
+    ipcRenderer.invoke('delete-mod-or-pack', { fileName, type, version, loaderType, activeProfileId }),
+  openFolder: (type: 'mods' | 'resourcepacks' | 'shaderpacks' | 'root', version?: string, loaderType?: string, activeProfileId?: string | null) =>
+    ipcRenderer.invoke('open-folder', { type, version, loaderType, activeProfileId }),
+  installModOrPack: (filePath: string, version?: string, loaderType?: string, activeProfileId?: string | null) =>
+    ipcRenderer.invoke('install-mod-or-pack', { filePath, version, loaderType, activeProfileId }),
   selectModsOrPacks: () =>
     ipcRenderer.invoke('select-mods-or-packs'),
 

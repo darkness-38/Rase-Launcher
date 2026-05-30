@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ModsTabProps {
   selectedVersion: string;
   selectedLoader: 'vanilla' | 'fabric' | 'forge';
+  activeProfileId: string | null;
 }
 
 export const ModsTab: React.FC<ModsTabProps> = ({
   selectedVersion,
   selectedLoader,
+  activeProfileId,
 }) => {
   const [mods, setMods] = useState<string[]>([]);
   const [packs, setPacks] = useState<string[]>([]);
@@ -23,7 +25,7 @@ export const ModsTab: React.FC<ModsTabProps> = ({
       return;
     }
     try {
-      const data = await window.electronAPI.getModsAndPacks(selectedVersion, selectedLoader);
+      const data = await window.electronAPI.getModsAndPacks(selectedVersion, selectedLoader, activeProfileId);
       setMods(data.mods || []);
       setPacks(data.packs || []);
       setShaders(data.shaders || []);
@@ -34,7 +36,7 @@ export const ModsTab: React.FC<ModsTabProps> = ({
 
   useEffect(() => {
     fetchFiles();
-  }, [selectedVersion, selectedLoader]);
+  }, [selectedVersion, selectedLoader, activeProfileId]);
 
   // Show a notification toast
   const triggerNotification = (type: 'success' | 'error', message: string) => {
@@ -96,7 +98,7 @@ export const ModsTab: React.FC<ModsTabProps> = ({
           }
           continue;
         }
-        await window.electronAPI.installModOrPack(absolutePath, selectedVersion, selectedLoader);
+        await window.electronAPI.installModOrPack(absolutePath, selectedVersion, selectedLoader, activeProfileId);
         successCount++;
       } catch (err: any) {
         failCount++;
@@ -133,7 +135,7 @@ export const ModsTab: React.FC<ModsTabProps> = ({
 
       for (const filePath of filePaths) {
         try {
-          await window.electronAPI.installModOrPack(filePath, selectedVersion, selectedLoader);
+          await window.electronAPI.installModOrPack(filePath, selectedVersion, selectedLoader, activeProfileId);
           successCount++;
         } catch (err: any) {
           failCount++;
@@ -170,7 +172,7 @@ export const ModsTab: React.FC<ModsTabProps> = ({
         }
         return;
       }
-      const res = await window.electronAPI.deleteModOrPack(fileName, type, selectedVersion, selectedLoader);
+      const res = await window.electronAPI.deleteModOrPack(fileName, type, selectedVersion, selectedLoader, activeProfileId);
       if (res.success) {
         triggerNotification('success', `${fileName} silindi.`);
         fetchFiles();
@@ -189,7 +191,7 @@ export const ModsTab: React.FC<ModsTabProps> = ({
         triggerNotification('success', `Browser: ${type} klasörü açıldı.`);
         return;
       }
-      await window.electronAPI.openFolder(type, selectedVersion, selectedLoader);
+      await window.electronAPI.openFolder(type, selectedVersion, selectedLoader, activeProfileId);
     } catch (e) {
       triggerNotification('error', 'Klasör açılamadı.');
     }
