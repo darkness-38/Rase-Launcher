@@ -2,7 +2,7 @@
 
 # 🚀 Rase Launcher
 
-**Modern ve hafif bir Minecraft Launcher**
+**Göz alıcı, cam efektli (glassmorphism) modern ve hafif bir Minecraft Launcher**
 
 [![Release](https://img.shields.io/github/v/release/darkness-38/Rase-Launcher?style=for-the-badge&color=7c3aed)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=for-the-badge)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
@@ -15,26 +15,33 @@
 
 ## ✨ Özellikler
 
-### 🎮 Oynatıcı
-- **Vanilla, Fabric ve Forge** desteği tek launcher'da
-- Otomatik Minecraft istemci dosyası indirme ve onarma
-- Çevrimdışı kimlik doğrulama (birden fazla kullanıcı profili)
-- Özelleştirilebilir RAM, Java yolu ve JVM argümanları
+### 🎮 Güçlü Minecraft İstemcisi
+- **Vanilla, Fabric ve Forge** desteği tek bir panelde.
+- Otomatik Mojang istemci dosyası indirme, kontrol etme ve otomatik JRE (Java Runtime) kurma/onarımı.
+- Çevrimdışı kimlik doğrulama (Çoklu kullanıcı profili yönetimi).
+- Özelleştirilebilir RAM ayarları, Java yolları ve optimize edilmiş JVM argümanları.
 
-### 📦 Mod Yöneticisi
-- Sürüm bazlı instance sistemi (her sürüm için ayrı mod klasörü)
-- Drag & drop mod kurulumu
-- Mod etkinleştirme / devre dışı bırakma
+### 🛍️ Entegre Modrinth Keşfet Mağazası
+- Modrinth API ile doğrudan entegre **Keşfet** sekmesi.
+- Mod paketleri (Modpacks), Modlar, Kaynak Paketleri (Resource Packs) ve Shader'ları doğrudan arayıp tek tıkla yükleme.
+- **Sürüm Bazlı Instance Sistemi**: Yüklenen her mod veya paket seçili profilin/sürümün kendi klasörüne kurulur, ana oyunu asla bozmaz.
 
-### 🎵 Discord Rich Presence
+### 🖼️ Premium Ekran Görüntüsü (Screenshot) Galerisi
+- Oyunda alınan **F2** ekran görüntülerini listeleyen şık, cam efektli galeri sekmesi.
+- **Dinamik Filtreleme**: Görselleri Seçili Profil, Genel Sürümler (Vanilla) veya Tüm Klasörler arasında filtreleme.
+- **Tam Ekran Lightbox**: Görsellere tıklayarak tam ekran inceleyebilir, yön tuşlarıyla (Sol/Sağ) gezinebilir ve doğrudan kalıcı olarak silebilirsiniz.
+
+### 🛠️ Özel Web Tabanlı Kurulum Sihirbazı (`Rase Setup`)
+- Projeye özel, ultra hafif Vite + TypeScript + Electron tabanlı **Rase Setup** uygulaması.
+- **Hızlı Kur (1-Tık)** ve **Gelişmiş Kurulum** (klasör seçimi, masaüstü/başlat menüsü kısayol kontrolleri) desteği.
+- Kurulum tamamlandığında göz alıcı **HTML5 Canvas konfeti patlama animasyonları**.
+- **Çevrimiçi (Online)** ve **Çevrimdışı (Offline)** derleme seçenekleri.
+
+### 🎵 Discord Zengin Varlık (Rich Presence) Desteği
 - Launcher açıkken: `Ana Sayfada Geziniyor`
-- Oyun açıldığında: sürüm adı (ör. `1.20.4 (Fabric)`)
-- Tek oyunculuda: `Tek Oyunculu` + sürüm adı
-- Çok oyunculuda: `Çok Oyunculu (sunucu-ip)` + sürüm adı
-
-### 🎨 Tasarım
-- Koyu tema, smooth animasyonlar (Framer Motion)
-- Snapshot & Historical sürüm filtreleri
+- Oyun açıldığında: seçili sürüm adı (ör. `1.21.1 (Fabric)`)
+- Tek oyunculuda: `Tek Oyunculu`
+- Çok oyunculuda: `Çok Oyunculu (sunucu-ip)`
 
 ---
 
@@ -42,52 +49,63 @@
 
 [**→ En Son Sürümü İndir**](https://github.com/darkness-38/Rase-Launcher/releases/latest)
 
-| Platform | Dosya | Açıklama |
-|----------|-------|----------|
-| 🐧 Linux | `Rase Launcher-x.x.x.AppImage` | Evrensel Linux binary **(önerilen)** |
-| 🐧 Linux | `rase-launcher-x.x.x.tar.gz` | Sıkıştırılmış arşiv |
-| 🪟 Windows | `Rase Launcher Setup x.x.x.exe` | NSIS kurulum sihirbazı **(önerilen)** |
-| 🪟 Windows | `Rase Launcher x.x.x.exe` | Portable (kurulum gerektirmez) |
+| Platform | Dosya Adı | Açıklama |
+|----------|-----------|----------|
+| 🪟 Windows | `Rase-Setup-x.x.x.exe` | **Çevrimiçi Kurulumcu (Önerilen)** - Çok hızlı iner, en güncel sürümü çeker. |
+| 🪟 Windows | `Rase-Setup-Offline-x.x.x.exe` | **Çevrimdışı Kurulumcu** - Her şey dahil tam paket (150 MB), internet gerektirmez. |
+| 🪟 Windows | `Rase-Launcher-x.x.x.zip` | Portable (Kurulum gerektirmeyen taşınabilir klasör) |
+| 🐧 Linux | `Rase Launcher-x.x.x.AppImage` | Evrensel Linux binary **(Önerilen)** |
+| 🐧 Linux | `rase-launcher-x.x.x.tar.gz` | Sıkıştırılmış Linux arşivi |
 
-### Linux AppImage
+### Linux Üzerinde Çalıştırma
 ```bash
-chmod +x "Rase Launcher-1.0.0.AppImage"
-./"Rase Launcher-1.0.0.AppImage"
+chmod +x "Rase Launcher-1.0.2-hotfix.AppImage"
+./"Rase Launcher-1.0.2-hotfix.AppImage"
 ```
 
 ---
 
-## 🛠️ Geliştirme
+## 🛠️ Geliştirme ve Derleme
 
 ### Gereksinimler
-- [Node.js](https://nodejs.org/) v18+
-- [npm](https://www.npmjs.com/)
+- [Node.js](https://nodejs.org/) v18+ ve npm
 
-### Kurulum
+### Proje Kurulumu
 ```bash
 git clone https://github.com/darkness-38/Rase-Launcher.git
 cd Rase-Launcher
 npm install
 ```
 
-### Geliştirme Modu
+### 1. Ana Launcher Geliştirme & Derleme
 ```bash
+# Geliştirme (Dev) Modunda Çalıştırma
 npm run dev
-```
 
-### Derleme
-```bash
-# Linux (AppImage + tar.gz)
+# Linux için Derleme (AppImage + tar.gz)
 npm run dist:linux
 
-# Windows (NSIS + Portable)
+# Windows için Derleme
 npm run dist:win
-
-# Her ikisi
-npm run dist
 ```
 
-Çıktılar `dist-package/` klasörüne gelir.
+### 2. Kurulum Sihirbazı (`Rase Setup`) Geliştirme & Derleme
+Kurulum sihirbazı kodları `/installer` dizininde ayrı bir alt proje olarak yer alır:
+```bash
+cd installer
+npm install
+
+# Geliştirme Modunda Başlatma
+npm run dev
+
+# Çevrimiçi Kurulumcu Derleme (Lightweight Rase-Setup.exe)
+npm run dist:online
+
+# Çevrimdışı Kurulumcu Derleme (Tüm launcher zip paketini içine gömer)
+npm run dist:offline
+```
+
+Derlenen tüm kurulumcular `/dist-package` ve `/installer/dist-package` klasörlerinde hazır hale gelir.
 
 ---
 
@@ -97,10 +115,10 @@ npm run dist
 |--------|-----------|
 | UI Framework | React 19 + TypeScript |
 | Build Tool | Vite |
-| Desktop | Electron 42 |
-| Animasyon | Framer Motion |
+| Desktop Core | Electron 42 + Esbuild |
+| Animasyonlar | Framer Motion |
 | Minecraft Core | minecraft-launcher-core |
-| Discord RPC | discord-rpc |
+| Zip Ayıklayıcı | adm-zip |
 | Paketleme | electron-builder |
 
 ---
