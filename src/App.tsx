@@ -395,21 +395,17 @@ export default function App() {
   const handleSetSelectedVersion = (v: string) => {
     setSelectedVersion(v);
     if (activeProfileId) {
-      const updatedProfiles = profiles.map(p => p.id === activeProfileId ? { ...p, version: v } : p);
-      handleProfilesChanged(updatedProfiles, activeProfileId);
-    } else {
-      saveActiveVersion(v, selectedLoader);
+      handleProfilesChanged(profiles, null);
     }
+    saveActiveVersion(v, selectedLoader);
   };
 
   const handleSetSelectedLoader = (l: 'vanilla' | 'fabric' | 'forge') => {
     setSelectedLoader(l);
     if (activeProfileId) {
-      const updatedProfiles = profiles.map(p => p.id === activeProfileId ? { ...p, loader: l } : p);
-      handleProfilesChanged(updatedProfiles, activeProfileId);
-    } else {
-      saveActiveVersion(selectedVersion, l);
+      handleProfilesChanged(profiles, null);
     }
+    saveActiveVersion(selectedVersion, l);
   };
 
   // Filter available versions based on visibility settings
