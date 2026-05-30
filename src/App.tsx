@@ -5,6 +5,7 @@ import { VersionDropdown } from './components/VersionDropdown';
 import { ModsTab } from './components/ModsTab';
 import { SettingsTab } from './components/SettingsTab';
 import { ProfilesTab } from './components/ProfilesTab';
+import { ThemesTab } from './components/ThemesTab';
 
 // Helper: parse installed version string to version and loader
 const parseInstalledVersion = (ver: string): { version: string; loader: 'vanilla' | 'fabric' | 'forge' } => {
@@ -27,7 +28,7 @@ export default function App() {
   // Navigation & User State
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'settings'>('play');
+  const [activeTab, setActiveTab] = useState<'play' | 'profiles' | 'mods' | 'themes' | 'settings'>('play');
   const [savedUsernames, setSavedUsernames] = useState<string[]>([]);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [newAccountInput, setNewAccountInput] = useState('');
@@ -50,6 +51,7 @@ export default function App() {
   const [latestVersionInfo, setLatestVersionInfo] = useState<{ version: string; url: string; body?: string } | null>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<'default' | 'forest' | 'ocean' | 'obsidian'>('default');
 
   // Version Visibility States
   const [showSnapshots, setShowSnapshots] = useState(false);
@@ -94,7 +96,8 @@ export default function App() {
       setProfiles(profs);
       setActiveProfileId(actId);
 
-      const activeTheme = settings.theme || 'default';
+      const activeTheme = (settings.theme as any) || 'default';
+      setCurrentTheme(activeTheme);
       document.body.className = activeTheme !== 'default' ? `theme-${activeTheme}` : '';
       
       const activeProf = profs.find((p: any) => p.id === actId);
@@ -251,6 +254,23 @@ export default function App() {
         });
       } catch (e) {
         console.error('Failed to save profiles to settings', e);
+      }
+    }
+  };
+
+  const handleThemeChanged = async (newTheme: 'default' | 'forest' | 'ocean' | 'obsidian') => {
+    setCurrentTheme(newTheme);
+    document.body.className = newTheme !== 'default' ? `theme-${newTheme}` : '';
+    
+    if (window.electronAPI) {
+      try {
+        const current = await window.electronAPI.getSettings();
+        await window.electronAPI.saveSettings({
+          ...current,
+          theme: newTheme
+        });
+      } catch (e) {
+        console.error('Failed to save theme setting', e);
       }
     }
   };
@@ -837,6 +857,7 @@ export default function App() {
                     {[
                       { id: 'play', name: 'Ana Sayfa', iconClass: 'ti ti-home' },
                       { id: 'profiles', name: 'Profiller', iconClass: 'ti ti-folder' },
+                      { id: 'themes', name: 'Temalar', iconClass: 'ti ti-palette' },
                       { id: 'mods', name: 'Paketler & Modlar', iconClass: 'ti ti-box' },
                     ].map((tab) => {
                       const isActive = activeTab === tab.id;
@@ -912,6 +933,7 @@ export default function App() {
                   <div className="page-title">
                     {activeTab === 'play' && 'Ana Sayfa'}
                     {activeTab === 'profiles' && 'Özel Profiller'}
+                    {activeTab === 'themes' && 'Arayüz Temaları'}
                     {activeTab === 'mods' && 'Paketler & Modlar'}
                     {activeTab === 'settings' && 'Ayarlar'}
                   </div>
@@ -1097,6 +1119,20 @@ export default function App() {
                           availableVersions={availableVersions}
                           onProfilesChanged={handleProfilesChanged}
                         />
+                      </motion.div>
+                    )}
+
+                    {/* TAB: THEMES VIEW */}
+                    {activeTab === 'themes' && (
+                      <motion.div
+                        key="themes-view"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.18 }}
+                        style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+                      >
+                        <ThemesTab currentTheme={currentTheme} onThemeChanged={handleThemeChanged} />
                       </motion.div>
                     )}
 
