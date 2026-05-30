@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import AdmZip from 'adm-zip';
 // @ts-ignore
 import { Client, Authenticator } from 'minecraft-launcher-core';
@@ -299,6 +299,160 @@ ipcMain.handle('select-mods-or-packs', async () => {
   }
   return [];
 });
+
+// Auto Java Downloader - Version Mapping Helper
+function getRequiredJavaVersion(mcVersion: string): number {
+  if (mcVersion.startsWith('1.21') || mcVersion.startsWith('1.20.5') || mcVersion.startsWith('1.20.6')) {
+    return 21;
+  }
+  if (mcVersion.startsWith('1.17') || mcVersion.startsWith('1.18') || mcVersion.startsWith('1.19') || mcVersion.startsWith('1.20')) {
+    return 17;
+  }
+  return 8;
+}
+
+// Auto Java Downloader - Recursive Executable Finder
+function findJavaExecutable(dir: string, execName: string): string | null {
+  if (!fs.existsSync(dir)) return null;
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    const fullPath = path.join(dir, file);
+    let stat;
+    try {
+      stat = fs.statSync(fullPath);
+    } catch (_) {
+      continue;
+    }
+    if (stat.isDirectory()) {
+      const found = findJavaExecutable(fullPath, execName);
+      if (found) return found;
+    } else if (file === execName) {
+      return fullPath;
+    }
+  }
+  return null;
+}
+
+// Auto Java Downloader - Streaming JRE Downloader and Unpacker
+async function ensureJavaRuntime(mcVersion: string): Promise<string> {
+  const javaMajor = getRequiredJavaVersion(mcVersion);
+  const runtimeBaseDir = path.join(defaultGameDir, 'runtime');
+  const destDir = path.join(runtimeBaseDir, `java-${javaMajor}`);
+  
+  const execName = isWindows ? 'java.exe' : 'java';
+  let execPath = findJavaExecutable(destDir, execName);
+  
+  if (execPath) {
+    console.log(`[Rase Launcher] Java ${javaMajor} JRE already exists at: ${execPath}`);
+    return execPath;
+  }
+  
+  // Make sure directories exist
+  fs.mkdirSync(destDir, { recursive: true });
+  
+  const osName = isWindows ? 'windows' : 'linux';
+  let arch = 'x64';
+  if (process.arch === 'arm64') arch = 'aarch64';
+  else if (process.arch === 'ia32') arch = 'x32';
+  
+  const downloadUrl = `https://api.adoptium.net/v3/binary/latest/${javaMajor}/ga/${osName}/${arch}/jre/hotspot/normal/eclipse`;
+  
+  mainWindow?.webContents.send('launch-status', { 
+    state: 'preparing', 
+    details: `Java ${javaMajor} JRE indiriliyor (Adoptium)...` 
+  });
+  
+  mainWindow?.webContents.send('launch-log', `[Rase Launcher] Downloading Java ${javaMajor} runtime JRE from: ${downloadUrl}`);
+  
+  const archiveExt = isWindows ? '.zip' : '.tar.gz';
+  const tempArchivePath = path.join(runtimeBaseDir, `temp-java-${javaMajor}${archiveExt}`);
+  
+  const res = await fetch(downloadUrl);
+  if (!res.ok) throw new Error(`Adoptium API returned HTTP ${res.status}`);
+  
+  const contentLength = parseInt(res.headers.get('content-length') || '0');
+  const chunks: Buffer[] = [];
+  let downloaded = 0;
+  
+  const reader = res.body!.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(Buffer.from(value));
+    downloaded += value.length;
+    
+    if (contentLength > 0 && mainWindow) {
+      const pct = Math.round((downloaded / contentLength) * 100);
+      mainWindow.webContents.send('launch-status', {
+        state: 'preparing',
+        details: `Java ${javaMajor} indiriliyor: ${Math.round(downloaded / 1024 / 1024)} / ${Math.round(contentLength / 1024 / 1024)} MB (${pct}%)`
+      });
+      mainWindow.webContents.send('launch-progress', {
+        type: 'download',
+        task: `java-${javaMajor}-jre`,
+        current: downloaded,
+        total: contentLength
+      });
+    }
+  }
+  
+  const buffer = Buffer.concat(chunks);
+  fs.writeFileSync(tempArchivePath, buffer);
+  
+  mainWindow?.webContents.send('launch-status', { 
+    state: 'preparing', 
+    details: `Java ${javaMajor} dosyaları ayıklanıyor...` 
+  });
+  
+  mainWindow?.webContents.send('launch-log', `[Rase Launcher] Extracting JRE archive to: ${destDir}`);
+  
+  if (isWindows) {
+    try {
+      const zip = new AdmZip(tempArchivePath);
+      zip.extractAllTo(destDir, true);
+    } catch (zipErr: any) {
+      throw new Error(`ZIP extraction failed: ${zipErr.message}`);
+    }
+  } else {
+    try {
+      execSync(`tar -xzf "${tempArchivePath}" -C "${destDir}"`);
+    } catch (tarErr: any) {
+      throw new Error(`TAR extraction failed: ${tarErr.message}`);
+    }
+  }
+  
+  // Clean up temporary JRE archive file
+  try {
+    fs.unlinkSync(tempArchivePath);
+  } catch (_) {}
+  
+  execPath = findJavaExecutable(destDir, execName);
+  if (!execPath) {
+    throw new Error(`Java executable not found in ${destDir} after extraction.`);
+  }
+  
+  // Grant executable permissions on Linux
+  if (!isWindows) {
+    try {
+      fs.chmodSync(execPath, 0o755);
+      const binDir = path.dirname(execPath);
+      const binFiles = fs.readdirSync(binDir);
+      for (const file of binFiles) {
+        fs.chmodSync(path.join(binDir, file), 0o755);
+      }
+    } catch (chmodErr: any) {
+      mainWindow?.webContents.send('launch-log', `[Rase Launcher] [WARNING] Failed to chmod binaries: ${chmodErr.message}`);
+    }
+  }
+  
+  mainWindow?.webContents.send('launch-status', { 
+    state: 'preparing', 
+    details: `Java ${javaMajor} kurulumu tamamlandı!` 
+  });
+  
+  mainWindow?.webContents.send('launch-log', `[Rase Launcher] Successfully set Java path to: ${execPath}`);
+  return execPath;
+}
 
 // Helper to resolve and create isolated version instances game directory
 function getInstanceDirectory(version?: string, loaderType?: string): string {
@@ -640,6 +794,18 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
 
   mainWindow.webContents.send('launch-status', { state: 'preparing', details: 'Checking files and assets...' });
 
+  // ---- Auto Java Downloader integration ----
+  let resolvedJavaPath: string | undefined = undefined;
+  if (!options.javaPath || options.javaPath === 'java' || options.javaPath.trim() === '') {
+    try {
+      resolvedJavaPath = await ensureJavaRuntime(version);
+    } catch (javaErr: any) {
+      mainWindow?.webContents.send('launch-log', `[Rase Launcher] [WARNING] Auto JRE download failed: ${javaErr.message}. Falling back to default system JRE.`);
+    }
+  } else {
+    resolvedJavaPath = options.javaPath;
+  }
+
   // Get Offline Authentication session object
   const auth = Authenticator.getAuth(username);
 
@@ -799,7 +965,7 @@ ipcMain.handle('launch-game', async (_event, { username, version, type, options 
       max: `${options.ram || 4}G`,
       min: '1G'
     },
-    javaPath: options.javaPath && options.javaPath !== 'java' ? options.javaPath : undefined,
+    javaPath: resolvedJavaPath,
     customArgs: [
       "-XX:+UseG1GC",
       "-XX:+ParallelRefProcEnabled",
