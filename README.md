@@ -26,14 +26,11 @@
 - Mod paketleri (Modpacks), Modlar, Kaynak Paketleri (Resource Packs) ve Shader'ları doğrudan arayıp tek tıkla yükleme.
 - **Sürüm Bazlı Instance Sistemi**: Yüklenen her mod veya paket seçili profilin/sürümün kendi klasörüne kurulur, ana oyunu asla bozmaz.
 
-### 📱 Telefon Kumandası (Web Dashboard) & Ses Mikseri
-- Oyun başladığında oluşturulan dinamik QR kodu telefondan taratarak bağlanabileceğiniz mobil optimize **Web Kumanda** paneli.
-- **Gerçek Zamanlı Sistem Durumu**: Telefon ekranında anlık CPU, RAM, FPS (Minecraft loglarından parse edilir) ve Oyun Süresi takibi.
-- **Sistem Medya Kontrolü**: Telefonunuz üzerinden sistem medya oynatıcısını oynat/durdur/ileri/geri yönetebilme.
-- **Uygulama Bazlı Ses Mikseri**: PulseAudio/Pipewire (Linux) ve PowerShell (Windows) entegrasyonu ile Minecraft (java), Chrome gibi arka planda ses çalan her uygulamayı telefondan ayrı ayrı susturabilme veya ses düzeyini değiştirebilme.
-
-### 🖼️ Çerçevesiz Tam Ekran (Borderless Fullscreen)
-- **Vanilla, Forge ve Fabric** sürümlerinde otomatik çerçevesiz pencere (borderless fullscreen) modu desteği.
+### 📊 Canlı Sistem Durumu & Telefon Kumandası (Web Dashboard)
+- **Yeni Sistem & Kumanda Sekmesi:** Launcher üzerinde CPU yükü, RAM tüketimi dairesel animasyonlu barlarla anlık olarak izlenir, Minecraft açıkken FPS sayacı ve oyun süresi görüntülenebilir.
+- **Canlı Medya Oynatıcı Kartı:** Launcher arayüzü ve telefon ekranından global play/pause/prev/next kontrolleri yapılabilir. Çalan şarkı adı, sanatçı, durup/başlayan dikey equalizer animasyonları ve ince terracotta ilerleme çizgisi saniyelik senkronize akmaktadır.
+- **Telefon Kumandasını Bağla:** Launcher açıkken Sistem sekmesinde üretilen dinamik QR kodu telefondan taratarak LAN üzerinden bağlanabileceğiniz mobil optimize **Web Kumanda** paneli.
+- **Uygulama Bazlı Ses Mikseri:** PulseAudio/Pipewire (Linux) ve PowerShell (Windows) entegrasyonu ile Minecraft (java), Chrome gibi arka planda ses çalan her uygulamayı telefondan ayrı ayrı susturabilme veya ses düzeyini değiştirebilme.
 
 ### 🖼️ Premium Ekran Görüntüsü (Screenshot) Galerisi
 - Oyunda alınan **F2** ekran görüntülerini listeleyen şık, cam efektli galeri sekmesi.
@@ -61,16 +58,16 @@
 
 | Platform | Dosya Adı | Açıklama |
 |----------|-----------|----------|
-| 🪟 Windows | `Rase-Setup-x.x.x.exe` | **Çevrimiçi Kurulumcu (Önerilen)** - Çok hızlı iner, en güncel sürümü çeker. |
-| 🪟 Windows | `Rase-Setup-Offline-x.x.x.exe` | **Çevrimdışı Kurulumcu** - Her şey dahil tam paket (150 MB), internet gerektirmez. |
-| 🪟 Windows | `Rase-Launcher-x.x.x.zip` | Portable (Kurulum gerektirmeyen taşınabilir klasör) |
-| 🐧 Linux | `Rase Launcher-x.x.x.AppImage` | Evrensel Linux binary **(Önerilen)** |
-| 🐧 Linux | `rase-launcher-x.x.x.tar.gz` | Sıkıştırılmış Linux arşivi |
+| 🪟 Windows | `Rase-Setup.exe` | **Çevrimiçi Kurulumcu (Önerilen)** - Çok hızlı iner, en güncel sürümü çeker. |
+| 🪟 Windows | `Rase-Setup-Offline.exe` | **Çevrimdışı Kurulumcu** - Her şey dahil tam paket (150 MB), internet gerektirmez. |
+| 🪟 Windows | `Rase-Launcher-win32-x64.zip` | Portable (Kurulum gerektirmeyen taşınabilir klasör) - **Tam İsim** |
+| 🐧 Linux | `Rase.Launcher-1.0.4-hotfix.AppImage` | Evrensel Linux binary **(Önerilen)** |
+| 🐧 Linux | `rase-launcher-1.0.4-hotfix.tar.gz` | Sıkıştırılmış Linux arşivi |
 
 ### Linux Üzerinde Çalıştırma
 ```bash
-chmod +x "Rase Launcher-1.0.3-hotfix.AppImage"
-./"Rase Launcher-1.0.3-hotfix.AppImage"
+chmod +x "Rase.Launcher-1.0.4-hotfix.AppImage"
+./"Rase.Launcher-1.0.4-hotfix.AppImage"
 ```
 
 ---
