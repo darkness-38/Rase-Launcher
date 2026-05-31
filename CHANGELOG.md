@@ -4,6 +4,18 @@ Tüm Rase Launcher sürümlerinin güncellemeleri, hata düzeltmeleri ve yeni ö
 
 ---
 
+## 🚀 [1.0.5] - 2026-05-31
+
+Bu güncelleme ile Rase Launcher'a özel, tescilli **Tek Tıkla Rase Paketi (.rase)** paylaşım ve kurulum altyapısı, göz alıcı cam efektli entegre kurulum arayüzü ve tam sürüm yükseltme özellikleri eklenmiştir!
+
+### 📤 Tek Tıkla Rase Paketi (.rase) Dışa/İçe Aktarıcı
+- **Profili Dışa Aktar (.rase):** Özel profil yöneticisindeki her profile terracotta renkli modern bir **Paylaş/Dışa Aktar (`ti-share`)** butonu eklendi. Profili anında tüm mod, doku ve config dosyalarıyla birlikte tek tıkla `.rase` paketi halinde kaydeder.
+- **Glassmorphic Kurulum Sihirbazı:** Paketler & Modlar ekranına dropped veya seçilen `.rase` paketleri için, tam ekran `backdrop-filter: blur(16px)` cam efekti, terracotta parlayan arşiv animasyonu ve **canlı %0-100 ilerleme çubuğu** barındıran kurulum modalı eklendi.
+- **Otomatik Profil Etkinleştirme:** Kurulum tamamlandığında yeni profil otomatik olarak settings listesine eklenir ve launcher **anında bu yeni profili aktif duruma getirir!**
+- **İsim Çakışması Koruması:** Aynı isimli profiller içe aktarılırken isimlerin çakışmasını engellemek için `(İthal - X)` benzersiz takıları eklenir.
+
+---
+
 ## 🚀 [1.0.4-hotfix] - 2026-05-31
 
 Bu hotfix güncellemesi ile Rase Launcher'a yepyeni "Sistem & Kumanda" sekmesi, sıfır gecikmeli asenkron müzik tanıma altyapısı, launcher içi interaktif medya oynatıcı arayüzü eklenmiş ve borderless fullscreen zorlaması ile otomatik QR pop-up'ları tamamen temizlenmiştir!
