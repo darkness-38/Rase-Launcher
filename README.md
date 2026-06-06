@@ -1,132 +1,86 @@
-<div align="center">
+# 🌌 Rase Launcher
 
-# 🚀 Rase Launcher
+<p align="center">
+  <img src="https://img.shields.io/badge/Project%20Status-Archived-red?style=for-the-badge&logo=git" alt="Status" />
+  <img src="https://img.shields.io/badge/Latest%20Version-v1.1.0--hotfix-orange?style=for-the-badge&logo=github" alt="Version" />
+  <img src="https://img.shields.io/badge/Made%20With-Electron%20%26%20React-cyan?style=for-the-badge&logo=electron" alt="Technologies" />
+  <img src="https://img.shields.io/badge/Platform-Linux%20%2F%20Windows-blue?style=for-the-badge" alt="Platforms" />
+</p>
 
-**Göz alıcı, cam efektli (glassmorphism) modern ve hafif bir Minecraft Launcher**
-
-[![Release](https://img.shields.io/github/v/release/darkness-38/Rase-Launcher?style=for-the-badge&color=7c3aed)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=for-the-badge)](https://github.com/darkness-38/Rase-Launcher/releases/latest)
-[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![Electron](https://img.shields.io/badge/Electron-42-47848F?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
-
-</div>
-
----
-
-## ✨ Özellikler
-
-### 🎮 Güçlü Minecraft İstemcisi
-- **Vanilla, Fabric ve Forge** desteği tek bir panelde.
-- Otomatik Mojang istemci dosyası indirme, kontrol etme ve otomatik JRE (Java Runtime) kurma/onarımı.
-- Çevrimdışı kimlik doğrulama (Çoklu kullanıcı profili yönetimi).
-- Özelleştirilebilir RAM ayarları, Java yolları ve optimize edilmiş JVM argümanları.
-
-### 🛍️ Entegre Modrinth Keşfet Mağazası
-- Modrinth API ile doğrudan entegre **Keşfet** sekmesi.
-- Mod paketleri (Modpacks), Modlar, Kaynak Paketleri (Resource Packs) ve Shader'ları doğrudan arayıp tek tıkla yükleme.
-- **Sürüm Bazlı Instance Sistemi**: Yüklenen her mod veya paket seçili profilin/sürümün kendi klasörüne kurulur, ana oyunu asla bozmaz.
-
-###  Premium Ekran Görüntüsü (Screenshot) Galerisi
-- Oyunda alınan **F2** ekran görüntülerini listeleyen şık, cam efektli galeri sekmesi.
-- **Dinamik Filtreleme**: Görselleri Seçili Profil, Genel Sürümler (Vanilla) veya Tüm Klasörler arasında filtreleme.
-- **Tam Ekran Lightbox**: Görsellere tıklayarak tam ekran inceleyebilir, yön tuşlarıyla (Sol/Sağ) gezinebilir ve doğrudan kalıcı olarak silebilirsiniz.
-
-### 🛡️ Akıllı Hata Denetimi & RAM Yönetimi
-- **Crash Log Okuyucu**: Oyun çöktüğünde oluşan hata raporlarını otomatik tespit eder ve launcher içinde detaylı olarak gösterir.
-- **Dinamik JVM Senkronizasyonu**: RAM ayarı değiştikçe Java parametreleri otomatik güncellenir, manuel müdahaleye gerek kalmaz.
-
-### 🛠️ Özel Web Tabanlı Kurulum Sihirbazı (`Rase Setup`)
-- Projeye özel, ultra hafif Vite + TypeScript + Electron tabanlı **Rase Setup** uygulaması.
-- **Hızlı Kur (1-Tık)** ve **Gelişmiş Kurulum** (klasör seçimi, masaüstü/başlat menüsü kısayol kontrolleri) desteği.
-- Kurulum tamamlandığında göz alıcı **HTML5 Canvas konfeti patlama animasyonları**.
-- **Çevrimiçi (Online)** ve **Çevrimdışı (Offline)** derleme seçenekleri.
-- **Kritik Hata Giderimi**: Windows kurulumlarında `app.asar` dosyası ayıklanırken yaşanan kilitlenme ve yetki/chmod hataları tamamen düzeltildi.
-
-### 🎵 Discord Zengin Varlık (Rich Presence) Desteği
-- Launcher açıkken: `Ana Sayfada Geziniyor`
-- Oyun açıldığında: seçili sürüm adı (ör. `1.21.1 (Fabric)`)
-- Tek oyunculuda: `Tek Oyunculu`
-- Çok oyunculuda: `Çok Oyunculu (sunucu-ip)`
-
----
-
-## 📥 İndirme
-
-[**→ En Son Sürümü İndir**](https://github.com/darkness-38/Rase-Launcher/releases/latest)
-
-| Platform | Dosya Adı | Açıklama |
-|----------|-----------|----------|
-| 🪟 Windows | `Rase-Setup-Offline.exe` | **Çevrimdışı Kurulumcu (Önerilen)** - Her şey dahil tam paket, internet gerektirmez. |
-| 🪟 Windows | `Rase-Launcher-win32-x64.zip` | Portable (Kurulum gerektirmeyen taşınabilir klasör) - **Tam İsim** |
-| 🐧 Linux | `Rase.Launcher-1.0.6-hotfix.AppImage` | Evrensel Linux binary **(Önerilen)** |
-| 🐧 Linux | `rase-launcher-1.0.6-hotfix.tar.gz` | Sıkıştırılmış Linux arşivi |
-
-### Linux Üzerinde Çalıştırma
-```bash
-chmod +x "Rase.Launcher-1.0.6-hotfix.AppImage"
-./"Rase.Launcher-1.0.6-hotfix.AppImage"
+```
+      _______      ________ ______ 
+     |  __ \ \    / /  ____|  ____|
+     | |__) \ \  / /| |__  | |__   
+     |  _  / \ \/ / |  __| |  __|  
+     | | \ \  \  /  | |____| |____ 
+     |_|  \_\  \/   |______|______|
 ```
 
----
-
-## 🛠️ Geliştirme ve Derleme
-
-### Gereksinimler
-- [Node.js](https://nodejs.org/) v18+ ve npm
-
-### Proje Kurulumu
-```bash
-git clone https://github.com/darkness-38/Rase-Launcher.git
-cd Rase-Launcher
-npm install
-```
-
-### 1. Ana Launcher Geliştirme & Derleme
-```bash
-# Geliştirme (Dev) Modunda Çalıştırma
-npm run dev
-
-# Linux için Derleme (AppImage + tar.gz)
-npm run dist:linux
-
-# Windows için Derleme
-npm run dist:win
-```
-
-### 2. Kurulum Sihirbazı (`Rase Setup`) Geliştirme & Derleme
-Kurulum sihirbazı kodları `/installer` dizininde ayrı bir alt proje olarak yer alır:
-```bash
-cd installer
-npm install
-
-# Geliştirme Modunda Başlatma
-npm run dev
-
-# Çevrimiçi Kurulumcu Derleme (Lightweight Rase-Setup.exe)
-npm run dist:online
-
-# Çevrimdışı Kurulumcu Derleme (Tüm launcher zip paketini içine gömer)
-npm run dist:offline
-```
-
-Derlenen tüm kurulumcular `/dist-package` ve `/installer/dist-package` klasörlerinde hazır hale gelir.
+> ⚠️ **ÖNEMLİ DUYURU / ARCHIVE NOTICE**  
+> Bu proje resmi olarak arşivlenmiştir ve aktif olarak geliştirilmemektedir. Kaynak kodları trajik bir kaza sonucu silinmiştir. Detaylar aşağıdadır.
 
 ---
 
-## 🏗️ Teknoloji Yığını
+## 🎬 Trajik Hikaye: Bir `rm -rf` Dramı 😢
+Her şey güzel gidiyordu... Yeni özellikler, performans optimizasyonları ve JVM argümanları ayarları tamamlanmış, en son kararlı sürüm başarıyla derlenip paketlenmişti. 
 
-| Katman | Teknoloji |
-|--------|-----------|
-| UI Framework | React 19 + TypeScript |
-| Build Tool | Vite |
-| Desktop Core | Electron 42 + Esbuild |
-| Animasyonlar | Framer Motion |
-| Minecraft Core | minecraft-launcher-core |
-| Zip Ayıklayıcı | adm-zip |
-| Paketleme | electron-builder |
+Ancak yerel diskte yapılan "ufak" bir temizlik sırasında yanlışlıkla tüm geliştirme dizini kalıcı olarak silindi. İşin acı tarafı, en son kod değişiklikleri henüz GitHub'a gönderilmemişti (push edilmemişti).
+
+* **Sonuç:** Repoda duran eski kodlar en güncel sürümle uyuşmamaktadır ve eksiktir. 
+* **Karar:** Projeyi bu noktada dondurmaya ve açık kaynak topluluğuna emanet etmeye karar verdik.
 
 ---
 
-## 📄 Lisans
+## 📊 Repo Durum Tablosu
 
-MIT © [darkness-38](https://github.com/darkness-38)
+| Dosya / Bileşen | Durum | Açıklama |
+| :--- | :--- | :--- |
+| **Geliştirici Kodları (`src/`, `electron/`)** | ❌ **SİLİNDİ** | Yerel diskten tamamen silinmiştir. Repoda eski halleri duruyordu, karışıklık olmaması adına temizlendi. |
+| **En Son Paket (`v1.1.0-hotfix`)** |  **AKTİF** | Derlenmiş ve paketlenmiş kararlı uygulama dosyası hâlâ kullanılabilir durumdadır. |
+| **Geliştirme Durumu** | 🛑 **DURDURULDU** | Yeni güncelleme veya hata düzeltmesi yapılmayacaktır. |
+
+---
+
+## 🚀 Son Sürüm Hâlâ Hayatta! nası indirip kurarım?
+Kodlar uçmuş olsa da, derlenmiş olan en son kararlı sürüm (**v1.1.0-hotfix**) sapasağlam çalışıyor. Uygulamayı kullanmaya devam etmek için:
+
+1. **[Releases / Sürümler](https://github.com/darkness-38/Rase-Launcher/releases)** sayfasına gidin.
+2. İşletim sisteminize uygun olan dosyayı indirin:
+   * **Linux kullanıcıları için:** `.AppImage` (Çalıştırılabilir yapıp doğrudan açabilirsiniz).
+   * **Windows kullanıcıları için:** `.exe` kurulum veya taşınabilir dosyası.
+3. Çift tıklayarak Minecraft maceralarınıza kaldığınız yerden devam edin!
+
+---
+
+## 🛠️ Kodları Kurtarmak & Devam Ettirmek İsteyen Yol Arkadaşları İçin
+Eğer *"Ben bu projeyi çok sevdim, kaldığı yerden devam ettireceğim veya kendi launcher'ımı yapacağım"* diyorsanız, önünüzde iki harika yol var:
+
+### 1. Sıfırdan Başlamak (Clean Start)
+Bu reponun geçmiş commit'lerine giderek (örn: `v1.0.6-hotfix` veya daha öncesi) eski kaynak kodlarını çekebilir ve projenizi bu temel üzerine inşa edebilirsiniz.
+
+### 2. AppImage İçinden Kodları Kurtarmak (Decompile/Reverse Engineering)
+En güncel kodlarımız (JSX, CSS ve Electron arka plan lojikleri) derlenmiş olarak `.AppImage` dosyasının içindedir. Bu kodları şu adımlarla kurtarabilirsiniz:
+
+```bash
+# 1. AppImage dosyasını klasöre çıkartın
+./Rase.Launcher-1.1.0-hotfix.AppImage --appimage-extract
+
+# 2. Çıkan klasördeki app.asar dosyasını npx yardımıyla açın
+npx @electron/asar extract squashfs-root/resources/app.asar kurtarilan-kodlar
+```
+
+`kurtarilan-kodlar` klasörünün içinde:
+* `dist-electron/main.cjs` dosyasında en güncel **Electron arka plan lojiğini**,
+* `dist/assets/index-*.js` dosyasında ise sıkıştırılmış (minified) **React bileşenlerini** bulabilirsiniz. Bir kod güzelleştirici (beautifier) kullanarak bu kodları tamamen okunabilir yapıp projenize kopyalayabilirsiniz!
+
+---
+
+## ❤️ Teşekkürler
+Bu süreçte projeyi kullanan, hata bildiren ve destek olan tüm Minecraft severlere sonsuz teşekkürler. 
+
+*Bir başka projede, daha sık `git push` atarak görüşmek üzere! Kendinize iyi bakın.* 👋
+
+---
+<p align="center">
+  <i>R.I.P. Rase Launcher Source Code (2026)</i>
+</p>
