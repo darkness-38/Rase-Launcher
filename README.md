@@ -26,12 +26,6 @@
 - Mod paketleri (Modpacks), Modlar, Kaynak Paketleri (Resource Packs) ve Shader'ları doğrudan arayıp tek tıkla yükleme.
 - **Sürüm Bazlı Instance Sistemi**: Yüklenen her mod veya paket seçili profilin/sürümün kendi klasörüne kurulur, ana oyunu asla bozmaz.
 
-### 📊 Canlı Sistem Durumu & Telefon Kumandası (Web Dashboard)
-- **Yeni Sistem & Kumanda Sekmesi:** Launcher üzerinde CPU yükü, RAM tüketimi dairesel animasyonlu barlarla anlık olarak izlenir, Minecraft açıkken FPS sayacı ve oyun süresi görüntülenebilir.
-- **Canlı Medya Oynatıcı Kartı:** Launcher arayüzü ve telefon ekranından global play/pause/prev/next kontrolleri yapılabilir. Çalan şarkı adı, sanatçı, durup/başlayan dikey equalizer animasyonları ve ince terracotta ilerleme çizgisi saniyelik senkronize akmaktadır.
-- **Telefon Kumandasını Bağla:** Launcher açıkken Sistem sekmesinde üretilen dinamik QR kodu telefondan taratarak LAN üzerinden bağlanabileceğiniz mobil optimize **Web Kumanda** paneli.
-- **Uygulama Bazlı Ses Mikseri:** PulseAudio/Pipewire (Linux) ve PowerShell (Windows) entegrasyonu ile Minecraft (java), Chrome gibi arka planda ses çalan her uygulamayı telefondan ayrı ayrı susturabilme veya ses düzeyini değiştirebilme.
-
 ###  Premium Ekran Görüntüsü (Screenshot) Galerisi
 - Oyunda alınan **F2** ekran görüntülerini listeleyen şık, cam efektli galeri sekmesi.
 - **Dinamik Filtreleme**: Görselleri Seçili Profil, Genel Sürümler (Vanilla) veya Tüm Klasörler arasında filtreleme.
