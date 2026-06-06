@@ -4,6 +4,18 @@ Tüm Rase Launcher sürümlerinin güncellemeleri, hata düzeltmeleri ve yeni ö
 
 ---
 
+## 🚀 [1.1.0-hotfix] - 2026-06-06
+
+Bu güncelleme ile RAM yönetimi ve JVM argümanları senkronize edilmiş, oyun çökme raporlarını otomatik okuyan bir sistem eklenmiş ve kullanıcı arayüzü geri bildirimleri iyileştirilmiştir!
+
+### 🛠️ Yeni Özellikler ve Geliştirmeler
+- **Akıllı RAM & JVM Senkronizasyonu:** RAM slider'ı kaydırıldığında JVM argümanlarındaki `-Xmx` ve `-Xms` değerleri artık anlık olarak güncellenir. "Optimize Ayarlar" butonu ile slider ve argümanlar birbirine kilitlenebilir.
+- **Otomatik Crash Log (Hata Raporu) Okuyucu:** Oyun çöktüğünde (non-zero exit code), launcher otomatik olarak en güncel `hs_err_pid*.log` veya `crash-reports/*.txt` dosyasını bulur ve raporu launcher içindeki yeni modal ekranında kullanıcıya sunar.
+- **Dinamik JVM Optimize Modu:** Elle yazılan argümanlar korunurken, optimize butonu ile launcher'ın önerdiği en iyi Java parametrelerine tek tıkla dönülebilir.
+- **Crash Rapor Yönetimi:** Hata raporları modal üzerinden doğrudan indirilebilir veya ilgili dosya dizini tek tıkla açılabilir.
+
+---
+
 ## 🚀 [1.0.6-hotfix] - 2026-06-05
 
 Bu hotfix güncellemesi ile arayüz pencere boyutlandırmaları optimize edilmiş, mobil kumanda ekranı sadeleştirilmiş ve kurulumcu dağıtım modelleri güncellenmiştir!
