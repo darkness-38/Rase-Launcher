@@ -1,19 +1,17 @@
 # 🌌 Rase Launcher (Archived & Discontinued)
 
 ```
-      _______      ________ ______ 
-     |  __ \ \    / /  ____|  ____|
-     | |__) \ \  / /| |__  | |__   
-     |  _  / \ \/ / |  __| |  __|  
-     | | \ \  \  /  | |____| |____ 
-     |_|  \_\  \/   |______|______|
+__________                        .____                               .__                  
+\______   \_____    ______ ____   |    |   _____   __ __  ____   ____ |  |__   ___________ 
+ |       _/\__  \  /  ___// __ \  |    |   \__  \ |  |  \/    \_/ ___\|  |  \_/ __ \_  __ \
+ |    |   \ / __ \_\___ \\  ___/  |    |___ / __ \|  |  /   |  \  \___|   Y  \  ___/|  | \/
+ |____|_  /(____  /____  >\___  > |_______ (____  /____/|___|  /\___  >___|  /\___  >__|   
+        \/      \/     \/     \/          \/    \/           \/     \/     \/     \/       
 ```
-
-> **"Bir `rm -rf` klasiği ve arşa ulaşan veda..."**
 
 ## ⚠️ Ne Oldu? (Küçük Bir Kaza)
 Bu projenin en son ve en güncel kaynak kodları, yerel bilgisayardaki bir temizlik esnasında yanlışlıkla kalıcı olarak silinmiştir. 
-* **GitHub'da duran bu repodaki kodlar eskidir/yanlıştır** ve son kararlı sürümü temsil etmemektedir.
+* **GitHub'da duran bu repodaki kodlar eskidir/yanlıştır** ve bu yüzden kaldırılmıştır.
 * **Geliştirme süreci resmi olarak durdurulmuştur (Discontinued).** Artık yeni bir özellik eklenmeyecek veya güncelleme yapılmayacaktır.
 
 ---
@@ -52,8 +50,3 @@ Bu işlem bittiğinde oluşturulan `kurtarilan-kodlar` klasörü içerisinde:
 
 ## 📜 Son Söz
 Projeye ilgi gösteren, kullanan ve destek veren herkese teşekkürler. Kodların silinmesi can sıksa da, son sürümün çalışır vaziyette olması tek tesellimiz. 
-
-*Bir başka projede, daha sık `git commit` atarak görüşmek üzere!* ☕
-
----
-*R.I.P. Rase Launcher Source Code (2026)*
