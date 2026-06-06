@@ -58,16 +58,15 @@
 
 | Platform | Dosya Adı | Açıklama |
 |----------|-----------|----------|
-| 🪟 Windows | `Rase-Setup.exe` | **Çevrimiçi Kurulumcu (Önerilen)** - Çok hızlı iner, en güncel sürümü çeker. |
-| 🪟 Windows | `Rase-Setup-Offline.exe` | **Çevrimdışı Kurulumcu** - Her şey dahil tam paket (150 MB), internet gerektirmez. |
+| 🪟 Windows | `Rase-Setup-Offline.exe` | **Çevrimdışı Kurulumcu (Önerilen)** - Her şey dahil tam paket, internet gerektirmez. |
 | 🪟 Windows | `Rase-Launcher-win32-x64.zip` | Portable (Kurulum gerektirmeyen taşınabilir klasör) - **Tam İsim** |
-| 🐧 Linux | `Rase.Launcher-1.0.5.AppImage` | Evrensel Linux binary **(Önerilen)** |
-| 🐧 Linux | `rase-launcher-1.0.5.tar.gz` | Sıkıştırılmış Linux arşivi |
+| 🐧 Linux | `Rase.Launcher-1.0.6-hotfix.AppImage` | Evrensel Linux binary **(Önerilen)** |
+| 🐧 Linux | `rase-launcher-1.0.6-hotfix.tar.gz` | Sıkıştırılmış Linux arşivi |
 
 ### Linux Üzerinde Çalıştırma
 ```bash
-chmod +x "Rase.Launcher-1.0.5.AppImage"
-./"Rase.Launcher-1.0.5.AppImage"
+chmod +x "Rase.Launcher-1.0.6-hotfix.AppImage"
+./"Rase.Launcher-1.0.6-hotfix.AppImage"
 ```
 
 ---

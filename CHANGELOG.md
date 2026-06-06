@@ -4,6 +4,18 @@ Tüm Rase Launcher sürümlerinin güncellemeleri, hata düzeltmeleri ve yeni ö
 
 ---
 
+## 🚀 [1.0.6-hotfix] - 2026-06-05
+
+Bu hotfix güncellemesi ile arayüz pencere boyutlandırmaları optimize edilmiş, mobil kumanda ekranı sadeleştirilmiş ve kurulumcu dağıtım modelleri güncellenmiştir!
+
+### 🛠️ Geliştirmeler ve Hata Düzeltmeleri
+- **Pencere Boyutlandırma İyileştirmesi:** Sol menüdeki (sidebar) kullanıcı profil avatarlarının ve isimlerinin alt kısımdan kırpılma/kesilme sorunu, launcher pencere yüksekliği 620px'ten **660px**'e yükseltilerek tamamen giderildi.
+- **Mobil Kumanda Sadeleştirmesi:** Kullanıcı talebi doğrultusunda mobil kumanda ekranındaki FPS göstergesi tamamen kaldırıldı.
+- **Dinamik Sürüm Etiketi:** Sol menü altında yer alan sürüm numarası statik değerden dinamikleştirilerek her zaman en güncel sürümü (`1.0.6`) gösterecek şekilde bağlandı.
+- **Tek Kurulumcu Modeli:** Dağıtım kolaylığı ve kararlılık için `Rase-Setup.exe` (çevrimiçi kurulumcu) kaldırıldı, sadece her şey dahil olan **`Rase-Setup-Offline.exe`** çevrimdışı kurulum modeli aktif bırakıldı.
+
+---
+
 ## 🚀 [1.0.5] - 2026-05-31
 
 Bu güncelleme ile Rase Launcher'a özel, tescilli **Tek Tıkla Rase Paketi (.rase)** paylaşım ve kurulum altyapısı, göz alıcı cam efektli entegre kurulum arayüzü ve tam sürüm yükseltme özellikleri eklenmiştir!
