@@ -1,11 +1,4 @@
-# 🌌 Rase Launcher
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Project%20Status-Archived-red?style=for-the-badge&logo=git" alt="Status" />
-  <img src="https://img.shields.io/badge/Latest%20Version-v1.1.0--hotfix-orange?style=for-the-badge&logo=github" alt="Version" />
-  <img src="https://img.shields.io/badge/Made%20With-Electron%20%26%20React-cyan?style=for-the-badge&logo=electron" alt="Technologies" />
-  <img src="https://img.shields.io/badge/Platform-Linux%20%2F%20Windows-blue?style=for-the-badge" alt="Platforms" />
-</p>
+# 🌌 Rase Launcher (Archived & Discontinued)
 
 ```
       _______      ________ ______ 
@@ -16,71 +9,51 @@
      |_|  \_\  \/   |______|______|
 ```
 
-> ⚠️ **ÖNEMLİ DUYURU / ARCHIVE NOTICE**  
-> Bu proje resmi olarak arşivlenmiştir ve aktif olarak geliştirilmemektedir. Kaynak kodları trajik bir kaza sonucu silinmiştir. Detaylar aşağıdadır.
+> **"Bir `rm -rf` klasiği ve arşa ulaşan veda..."**
+
+## ⚠️ Ne Oldu? (Küçük Bir Kaza)
+Bu projenin en son ve en güncel kaynak kodları, yerel bilgisayardaki bir temizlik esnasında yanlışlıkla kalıcı olarak silinmiştir. 
+* **GitHub'da duran bu repodaki kodlar eskidir/yanlıştır** ve son kararlı sürümü temsil etmemektedir.
+* **Geliştirme süreci resmi olarak durdurulmuştur (Discontinued).** Artık yeni bir özellik eklenmeyecek veya güncelleme yapılmayacaktır.
 
 ---
 
-## 🎬 Trajik Hikaye: Bir `rm -rf` Dramı 😢
-Her şey güzel gidiyordu... Yeni özellikler, performans optimizasyonları ve JVM argümanları ayarları tamamlanmış, en son kararlı sürüm başarıyla derlenip paketlenmişti. 
+## 🚀 Son Sürüm Hâlâ Aktif!
+Kodlar gitmiş olsa da, derlenmiş ve paketlenmiş olan en son kararlı sürüm (**v1.1.0-hotfix**) sapasağlam duruyor! 
 
-Ancak yerel diskte yapılan "ufak" bir temizlik sırasında yanlışlıkla tüm geliştirme dizini kalıcı olarak silindi. İşin acı tarafı, en son kod değişiklikleri henüz GitHub'a gönderilmemişti (push edilmemişti).
-
-* **Sonuç:** Repoda duran eski kodlar en güncel sürümle uyuşmamaktadır ve eksiktir. 
-* **Karar:** Projeyi bu noktada dondurmaya ve açık kaynak topluluğuna emanet etmeye karar verdik.
-
----
-
-## 📊 Repo Durum Tablosu
-
-| Dosya / Bileşen | Durum | Açıklama |
-| :--- | :--- | :--- |
-| **Geliştirici Kodları (`src/`, `electron/`)** | ❌ **SİLİNDİ** | Yerel diskten tamamen silinmiştir. Repoda eski halleri duruyordu, karışıklık olmaması adına temizlendi. |
-| **En Son Paket (`v1.1.0-hotfix`)** |  **AKTİF** | Derlenmiş ve paketlenmiş kararlı uygulama dosyası hâlâ kullanılabilir durumdadır. |
-| **Geliştirme Durumu** | 🛑 **DURDURULDU** | Yeni güncelleme veya hata düzeltmesi yapılmayacaktır. |
-
----
-
-## 🚀 Son Sürüm Hâlâ Hayatta! nası indirip kurarım?
-Kodlar uçmuş olsa da, derlenmiş olan en son kararlı sürüm (**v1.1.0-hotfix**) sapasağlam çalışıyor. Uygulamayı kullanmaya devam etmek için:
-
-1. **[Releases / Sürümler](https://github.com/darkness-38/Rase-Launcher/releases)** sayfasına gidin.
-2. İşletim sisteminize uygun olan dosyayı indirin:
-   * **Linux kullanıcıları için:** `.AppImage` (Çalıştırılabilir yapıp doğrudan açabilirsiniz).
-   * **Windows kullanıcıları için:** `.exe` kurulum veya taşınabilir dosyası.
-3. Çift tıklayarak Minecraft maceralarınıza kaldığınız yerden devam edin!
+Uygulamayı hâlâ sorunsuz ve güncel bir şekilde kullanmak isterseniz:
+👉 **[Releases (Yayınlar)](https://github.com/darkness-38/Rase-Launcher/releases)** kısmına giderek son kararlı sürümü (`.AppImage` veya `.exe`) indirip doğrudan çalıştırabilirsiniz.
 
 ---
 
 ## 🛠️ Kodları Kurtarmak & Devam Ettirmek İsteyen Yol Arkadaşları İçin
-Eğer *"Ben bu projeyi çok sevdim, kaldığı yerden devam ettireceğim veya kendi launcher'ımı yapacağım"* diyorsanız, önünüzde iki harika yol var:
 
-### 1. Sıfırdan Başlamak (Clean Start)
-Bu reponun geçmiş commit'lerine giderek (örn: `v1.0.6-hotfix` veya daha öncesi) eski kaynak kodlarını çekebilir ve projenizi bu temel üzerine inşa edebilirsiniz.
+Eğer projenin gidişatını sevdiyseniz ve *"Ben bu işi burada bırakmam, kaldığı yerden devralıp geliştirmeye devam edeceğim"* diyorsanız, önünüzde uygulayabileceğiniz iki alternatif yol bulunuyor:
 
-### 2. AppImage İçinden Kodları Kurtarmak (Decompile/Reverse Engineering)
-En güncel kodlarımız (JSX, CSS ve Electron arka plan lojikleri) derlenmiş olarak `.AppImage` dosyasının içindedir. Bu kodları şu adımlarla kurtarabilirsiniz:
+### 1. Sıfırdan & Eski Commit'lerden Başlamak (Temiz Başlangıç)
+Reponun geçmiş commit geçmişine (örneğin `v1.0.6-hotfix` veya daha eski etiketlere/commit'lere) giderek stabil durumdaki eski kaynak kodlarını çekebilir ve projenizi bu temel üzerine inşa etmeye başlayabilirsiniz.
+
+### 2. AppImage İçinden Kodları Geri Kazanmak (Tersine Mühendislik)
+En son sürümde çalışan en güncel React bileşenlerimiz (JSX), stil kodlarımız (CSS) ve Electron backend lojiklerimiz derlenmiş ve paketlenmiş şekilde `.AppImage` dosyasının içinde muhafaza edilmektedir. Bu dosyaları dışarı aktarmak için terminalinizde şu komutları sırasıyla uygulayabilirsiniz:
 
 ```bash
-# 1. AppImage dosyasını klasöre çıkartın
+# 1. İlk olarak indirdiğiniz AppImage dosyasını bir klasöre çıkartın
 ./Rase.Launcher-1.1.0-hotfix.AppImage --appimage-extract
 
-# 2. Çıkan klasördeki app.asar dosyasını npx yardımıyla açın
+# 2. Çıkan klasör içindeki app.asar arşivini npx aracılığıyla açın
 npx @electron/asar extract squashfs-root/resources/app.asar kurtarilan-kodlar
 ```
 
-`kurtarilan-kodlar` klasörünün içinde:
-* `dist-electron/main.cjs` dosyasında en güncel **Electron arka plan lojiğini**,
-* `dist/assets/index-*.js` dosyasında ise sıkıştırılmış (minified) **React bileşenlerini** bulabilirsiniz. Bir kod güzelleştirici (beautifier) kullanarak bu kodları tamamen okunabilir yapıp projenize kopyalayabilirsiniz!
+Bu işlem bittiğinde oluşturulan `kurtarilan-kodlar` klasörü içerisinde:
+* `dist-electron/main.cjs` dosyasında: En güncel Electron arka plan ve sistem entegrasyonu kodlarını bulabilirsiniz.
+* `dist/assets/index-*.js` dosyasında: Sıkıştırılmış (minified) frontend ve React bileşeni mantıklarını bulabilirsiniz. Bir **code beautifier (kod güzelleştirici)** yazılım kullanarak bu dosyayı düzenli satırlara döküp kodları tamamen okunabilir hale getirebilir ve kendi projenize aktarabilirsiniz!
 
 ---
 
-## ❤️ Teşekkürler
-Bu süreçte projeyi kullanan, hata bildiren ve destek olan tüm Minecraft severlere sonsuz teşekkürler. 
+## 📜 Son Söz
+Projeye ilgi gösteren, kullanan ve destek veren herkese teşekkürler. Kodların silinmesi can sıksa da, son sürümün çalışır vaziyette olması tek tesellimiz. 
 
-*Bir başka projede, daha sık `git push` atarak görüşmek üzere! Kendinize iyi bakın.* 👋
+*Bir başka projede, daha sık `git commit` atarak görüşmek üzere!* ☕
 
 ---
-<p align="center">
-  <i>R.I.P. Rase Launcher Source Code (2026)</i>
-</p>
+*R.I.P. Rase Launcher Source Code (2026)*
