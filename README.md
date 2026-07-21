@@ -21,6 +21,7 @@ Kodlar gitmiş olsa da, derlenmiş ve paketlenmiş olan en son kararlı sürüm 
 
 Uygulamayı hâlâ sorunsuz ve güncel bir şekilde kullanmak isterseniz:
 👉 **[Releases (Yayınlar)](https://github.com/darkness-38/Rase-Launcher/releases)** kısmına giderek son kararlı sürümü (`.AppImage` veya `.exe`) indirip doğrudan çalıştırabilirsiniz.
+NOT!! .exe ÇALIŞMAMAKTADIR ZIP DOSYASINI İNDİRİP AÇMANIZ GEREKMEKTEDİR
 
 ---
 
